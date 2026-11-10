@@ -2,8 +2,8 @@ import type { Department, EmploymentType, Member, UserProfile } from "./types"
 
 export const SEED_CURRENT_USER: UserProfile = {
   id: "usr-001",
-  name: "Ruslan",
-  role: "Front-end Engineer",
+  name: "Alex Vance",
+  role: "Lead Architect",
 }
 
 export const SEED_DEPARTMENTS: Department[] = [

@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it } from "vitest"
+import { SEED_CURRENT_USER } from "../seed"
 import { resetMockStore } from "../store"
 import { GET as getCurrentUserRoute } from "../../users/me/route"
 import { GET as getMembersRoute, POST as createMemberRoute } from "../../members/route"
@@ -32,11 +33,7 @@ describe("In-Memory Mock API Routes", () => {
 
     expect(res.status).toBe(200)
     expect(json.status).toBe(true)
-    expect(json.data).toEqual({
-      id: "usr-001",
-      name: "Ruslan",
-      role: "Front-end Engineer",
-    })
+    expect(json.data).toEqual(SEED_CURRENT_USER)
   })
 
   it("GET /api/members supports listing and filtering", async () => {
