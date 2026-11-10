@@ -19,7 +19,21 @@
       }
     ],
     "paths": {
-      "@/*": ["./*"]
+      "@/*": ["./*"],
+      "@atoms/*": ["./shared/presentation/components/atoms/*"],
+      "@atoms": ["./shared/presentation/components/atoms"],
+      "@molecules/*": ["./shared/presentation/components/molecules/*"],
+      "@molecules": ["./shared/presentation/components/molecules"],
+      "@organisms/*": ["./shared/presentation/components/organisms/*"],
+      "@organisms": ["./shared/presentation/components/organisms"],
+      "@templates/*": ["./shared/presentation/components/templates/*"],
+      "@templates": ["./shared/presentation/components/templates"],
+      "@pages/*": ["./shared/presentation/components/pages/*"],
+      "@pages": ["./shared/presentation/components/pages"],
+      "@lib/*": ["./shared/lib/*"],
+      "@lib": ["./shared/lib"],
+      "@hooks/*": ["./shared/hooks/*"],
+      "@hooks": ["./shared/hooks"]
     }
   },
   "include": [
@@ -28,7 +42,8 @@
     "**/*.tsx",
     ".next/types/**/*.ts",
     ".next/dev/types/**/*.ts",
-    "**/*.mts"
+    "**/*.mts",
+    "vitest.config.mjs"
   ],
   "exclude": ["node_modules"]
 }
