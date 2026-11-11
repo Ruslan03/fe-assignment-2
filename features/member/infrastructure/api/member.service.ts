@@ -68,4 +68,19 @@ export class MemberService implements IMemberRepository {
 
     return data?.data as MemberType
   }
+
+  async deleteMember(id: string): Promise<MemberType> {
+    const url = `${process.env.NEXT_PUBLIC_BASE_API_URL}/members/${encodeURIComponent(id)}`
+    const res = await fetch(url, {
+      method: "DELETE",
+    })
+
+    const data = await res.json()
+
+    if (!res.ok) {
+      throw new Error(data?.message ?? "Failed to delete member")
+    }
+
+    return data?.data as MemberType
+  }
 }

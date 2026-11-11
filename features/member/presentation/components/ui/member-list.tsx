@@ -2,7 +2,6 @@
 
 import { useEffect } from "react"
 import Link from "next/link"
-import { Trash2 } from "lucide-react"
 
 import { formatDate } from "@/shared/presentation/helpers/format-date"
 import { getInitials } from "@/shared/presentation/helpers/get-initials"
@@ -19,7 +18,13 @@ import { StatusBadge } from "@molecules/status-badge"
 import { DataTable, type DataTableColumn } from "@organisms/data-table"
 
 import type { MemberType } from "../../../domain/member.entity"
-import { fetchMembers, selectMemberState, setSearch } from "../../store"
+import {
+  clearDeleteError,
+  fetchMembers,
+  selectMemberState,
+  setSearch,
+} from "../../store"
+import { DeleteMemberButton } from "./delete-member-button"
 
 function getMemberDetailHref(id: string): string {
   return `/members/${encodeURIComponent(id)}`
@@ -98,15 +103,14 @@ const MEMBER_COLUMNS: DataTableColumn<MemberType>[] = [
         >
           <Link href={getMemberDetailHref(member.id)}>Edit</Link>
         </Button>
-        <Button
-          type="button"
+        <DeleteMemberButton
+          member={member}
           variant="ghost"
           size="icon-sm"
+          iconOnly
           aria-label={`Delete ${member.name}`}
           className="text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
-        >
-          <Trash2 />
-        </Button>
+        />
       </div>
     ),
   },
@@ -114,28 +118,47 @@ const MEMBER_COLUMNS: DataTableColumn<MemberType>[] = [
 
 export function MemberList() {
   const dispatch = useAppDispatch()
-  const { items, search, isLoading, error } = useAppSelector(selectMemberState)
+  const { items, search, isLoading, error, deleteError } =
+    useAppSelector(selectMemberState)
   const debouncedSearch = useDebounce(search, 1000)
 
   useEffect(() => {
     void dispatch(fetchMembers(debouncedSearch || undefined))
   }, [dispatch, debouncedSearch])
 
+  useEffect(() => {
+    return () => {
+      dispatch(clearDeleteError())
+    }
+  }, [dispatch])
+
   return (
-    <DataTable
-      columns={MEMBER_COLUMNS}
-      data={items}
-      getRowKey={(member) => member.id}
-      isLoading={isLoading}
-      error={error}
-      loadingMessage="Loading members..."
-      emptyMessage="No members found."
-      search={{
-        value: search,
-        onChange: (value) => dispatch(setSearch(value)),
-        placeholder: "Search by name, email, or role...",
-        ariaLabel: "Search members",
-      }}
-    />
+    <>
+      {deleteError && (
+        <Text
+          as="p"
+          variant="caption"
+          role="alert"
+          className="text-destructive"
+        >
+          {deleteError}
+        </Text>
+      )}
+      <DataTable
+        columns={MEMBER_COLUMNS}
+        data={items}
+        getRowKey={(member) => member.id}
+        isLoading={isLoading}
+        error={error}
+        loadingMessage="Loading members..."
+        emptyMessage="No members found."
+        search={{
+          value: search,
+          onChange: (value) => dispatch(setSearch(value)),
+          placeholder: "Search by name, email, or role...",
+          ariaLabel: "Search members",
+        }}
+      />
+    </>
   )
 }

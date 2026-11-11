@@ -8,6 +8,7 @@ import type {
 import type { IMemberRepository } from "../member.repository.interface"
 import {
   createMemberUseCase,
+  deleteMemberUseCase,
   getAllMembersUseCase,
   getMemberByIdUseCase,
   updateMemberUseCase,
@@ -47,6 +48,7 @@ describe("member usecases", () => {
       getMemberById: vi.fn(),
       createMember: vi.fn(),
       updateMember: vi.fn(),
+      deleteMember: vi.fn(),
     }
 
     const allResult = await getAllMembersUseCase(repo)
@@ -65,6 +67,7 @@ describe("member usecases", () => {
       getMemberById,
       createMember: vi.fn(),
       updateMember: vi.fn(),
+      deleteMember: vi.fn(),
     }
 
     const result = await getMemberByIdUseCase(repo, "mem-001")
@@ -79,6 +82,7 @@ describe("member usecases", () => {
       getMemberById: vi.fn(),
       createMember,
       updateMember: vi.fn(),
+      deleteMember: vi.fn(),
     }
 
     const result = await createMemberUseCase(repo, CREATE_PAYLOAD)
@@ -94,10 +98,26 @@ describe("member usecases", () => {
       getMemberById: vi.fn(),
       createMember: vi.fn(),
       updateMember,
+      deleteMember: vi.fn(),
     }
 
     const result = await updateMemberUseCase(repo, "mem-001", UPDATE_PAYLOAD)
     expect(updateMember).toHaveBeenCalledWith("mem-001", UPDATE_PAYLOAD)
     expect(result).toEqual(updatedMember)
+  })
+
+  it("delegates deleteMemberUseCase to repository deleteMember", async () => {
+    const deleteMember = vi.fn().mockResolvedValue(MOCK_MEMBERS[0])
+    const repo: IMemberRepository = {
+      getAllMembers: vi.fn(),
+      getMemberById: vi.fn(),
+      createMember: vi.fn(),
+      updateMember: vi.fn(),
+      deleteMember,
+    }
+
+    const result = await deleteMemberUseCase(repo, "mem-001")
+    expect(deleteMember).toHaveBeenCalledWith("mem-001")
+    expect(result).toEqual(MOCK_MEMBERS[0])
   })
 })

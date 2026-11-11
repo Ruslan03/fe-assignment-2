@@ -11,7 +11,6 @@ import {
   Mail,
   Save,
   ToggleLeft,
-  Trash2,
 } from "lucide-react"
 import { Controller, useForm } from "react-hook-form"
 import { z } from "zod"
@@ -34,11 +33,13 @@ import { TextareaField } from "@molecules/textarea-field"
 import type { MemberType } from "../../../domain/member.entity"
 import {
   clearCreateError,
+  clearDeleteError,
   clearUpdateError,
   createMember,
   selectMemberState,
   updateMember,
 } from "../../store"
+import { DeleteMemberButton } from "./delete-member-button"
 
 const memberSchema = z.object({
   name: z.string().trim().min(1, "Full name is required"),
@@ -99,13 +100,20 @@ function toFormValues(member?: MemberType): MemberFormValues {
 export function MemberForm({ mode = "create", initialData }: MemberFormProps) {
   const isEdit = mode === "edit"
   const dispatch = useAppDispatch()
-  const { isCreating, createError, isUpdating, updateError } =
-    useAppSelector(selectMemberState)
+  const {
+    isCreating,
+    createError,
+    isUpdating,
+    updateError,
+    isDeleting,
+    deleteError,
+  } = useAppSelector(selectMemberState)
   const [submittedMember, setSubmittedMember] =
     useState<SubmittedMemberInfo | null>(null)
 
   const isSubmitting = isEdit ? isUpdating : isCreating
-  const submitError = isEdit ? updateError : createError
+  const isBusy = isSubmitting || isDeleting
+  const submitError = (isEdit ? updateError : createError) ?? deleteError
 
   const {
     register,
@@ -127,6 +135,7 @@ export function MemberForm({ mode = "create", initialData }: MemberFormProps) {
     return () => {
       dispatch(clearCreateError())
       dispatch(clearUpdateError())
+      dispatch(clearDeleteError())
     }
   }, [dispatch])
 
@@ -273,16 +282,13 @@ export function MemberForm({ mode = "create", initialData }: MemberFormProps) {
           </SectionCard>
 
           <CardFooter className="flex-wrap items-center justify-end gap-3 border-t border-border bg-muted/30 py-4">
-            {isEdit && (
-              <Button
-                type="button"
-                variant="destructive"
+            {isEdit && initialData && (
+              <DeleteMemberButton
+                member={initialData}
+                dismissHref="/"
                 className="mr-auto"
-                disabled={isSubmitting}
-              >
-                <Trash2 />
-                Delete Member
-              </Button>
+                disabled={isBusy}
+              />
             )}
 
             {submitError && (
@@ -298,7 +304,7 @@ export function MemberForm({ mode = "create", initialData }: MemberFormProps) {
               </Text>
             )}
 
-            {isSubmitting ? (
+            {isBusy ? (
               <Button type="button" variant="secondary" disabled>
                 Cancel
               </Button>
@@ -308,7 +314,7 @@ export function MemberForm({ mode = "create", initialData }: MemberFormProps) {
               </Button>
             )}
 
-            <Button type="submit" disabled={isSubmitting}>
+            <Button type="submit" disabled={isBusy}>
               <Save />
               Save Changes
             </Button>

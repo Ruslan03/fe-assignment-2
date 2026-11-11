@@ -173,4 +173,38 @@ describe("MemberService", () => {
       "Member not found"
     )
   })
+
+  it("deletes member at /members/:id and throws when response is not ok", async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce({
+        ok: true,
+        json: vi
+          .fn()
+          .mockResolvedValue({ status: true, data: MOCK_MEMBERS[0] }),
+      })
+      .mockResolvedValueOnce({
+        ok: false,
+        json: vi.fn().mockResolvedValue({
+          status: false,
+          message: "Member not found",
+        }),
+      })
+    vi.stubGlobal("fetch", fetchMock)
+
+    const service = new MemberService()
+    const result = await service.deleteMember("mem-001")
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      "http://localhost:3000/api/members/mem-001",
+      {
+        method: "DELETE",
+      }
+    )
+    expect(result).toEqual(MOCK_MEMBERS[0])
+
+    await expect(service.deleteMember("missing")).rejects.toThrow(
+      "Member not found"
+    )
+  })
 })

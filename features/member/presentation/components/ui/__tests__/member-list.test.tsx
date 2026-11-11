@@ -6,7 +6,7 @@ import { ReduxProvider } from "@/shared/presentation/store/provider"
 
 import * as memberController from "../../../../controller/member.controller"
 import type { MemberType } from "../../../../domain/member.entity"
-import { fetchMembers, setSearch } from "../../../store"
+import { clearDeleteError, fetchMembers, setSearch } from "../../../store"
 import { MemberList } from "../member-list"
 
 const MOCK_MEMBERS: MemberType[] = [
@@ -35,6 +35,7 @@ describe("MemberList", () => {
     vi.useFakeTimers()
     store.dispatch(setSearch(""))
     store.dispatch(fetchMembers.fulfilled([], "", undefined))
+    store.dispatch(clearDeleteError())
   })
 
   afterEach(() => {
@@ -153,5 +154,44 @@ describe("MemberList", () => {
     })
 
     expect(screen.getByText("Failed to load")).toBeInTheDocument()
+  })
+
+  it("deletes a member via DeleteMemberButton and removes the row on Dismiss", async () => {
+    vi.spyOn(memberController, "getAllMemberController").mockResolvedValueOnce(
+      MOCK_MEMBERS
+    )
+    const deleteSpy = vi
+      .spyOn(memberController, "deleteMemberController")
+      .mockResolvedValueOnce(MOCK_MEMBERS[0])
+
+    render(
+      <ReduxProvider>
+        <MemberList />
+      </ReduxProvider>
+    )
+
+    await act(async () => {
+      await Promise.resolve()
+    })
+
+    expect(screen.getByText("Ruslan Wanandi")).toBeInTheDocument()
+
+    await act(async () => {
+      fireEvent.click(
+        screen.getByRole("button", { name: "Delete Ruslan Wanandi" })
+      )
+      await Promise.resolve()
+    })
+
+    expect(deleteSpy).toHaveBeenCalledWith("mem-001")
+    expect(screen.getByRole("dialog")).toBeInTheDocument()
+    expect(screen.getByText("Member Deleted Successfully")).toBeInTheDocument()
+    expect(screen.getByText("#MEM-001")).toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole("button", { name: "Dismiss" }))
+
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument()
+    expect(screen.queryByText("Ruslan Wanandi")).not.toBeInTheDocument()
+    expect(screen.getByText("Dimas Nugroho")).toBeInTheDocument()
   })
 })

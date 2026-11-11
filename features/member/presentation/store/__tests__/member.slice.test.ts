@@ -9,16 +9,19 @@ import type {
 } from "../../../domain/member.entity"
 import {
   createMember,
+  deleteMember,
   fetchMemberById,
   fetchMembers,
   updateMember,
 } from "../member.action"
 import {
   clearCreateError,
+  clearDeleteError,
   clearSelectedMember,
   clearUpdateError,
   initialMemberState,
   memberReducer,
+  removeMemberFromState,
   selectMemberState,
   setSearch,
 } from "../member.slice"
@@ -49,6 +52,7 @@ describe("memberSlice", () => {
     store.dispatch(fetchMembers.fulfilled([], "", undefined))
     store.dispatch(clearCreateError())
     store.dispatch(clearUpdateError())
+    store.dispatch(clearDeleteError())
     store.dispatch(clearSelectedMember())
     vi.restoreAllMocks()
   })
@@ -62,18 +66,37 @@ describe("memberSlice", () => {
     expect(store.getState().member).toEqual(initialMemberState)
   })
 
-  it("handles setSearch, clearCreateError, clearUpdateError, and clearSelectedMember reducers", () => {
+  it("handles setSearch, error clearing, clearSelectedMember, and removeMemberFromState reducers", () => {
     let state = memberReducer(initialMemberState, setSearch("alya"))
     expect(state.search).toBe("alya")
 
     state = memberReducer(
-      { ...state, createError: "Submit failed", updateError: "Update failed" },
+      {
+        ...state,
+        createError: "Submit failed",
+        updateError: "Update failed",
+        deleteError: "Delete failed",
+      },
       clearCreateError()
     )
     expect(state.createError).toBeNull()
 
     state = memberReducer(state, clearUpdateError())
     expect(state.updateError).toBeNull()
+
+    state = memberReducer(state, clearDeleteError())
+    expect(state.deleteError).toBeNull()
+
+    state = memberReducer(
+      {
+        ...state,
+        items: SAMPLE_MEMBERS,
+        selectedMember: SAMPLE_MEMBERS[0],
+      },
+      removeMemberFromState("mem-001")
+    )
+    expect(state.items).toEqual([])
+    expect(state.selectedMember).toBeNull()
 
     state = memberReducer(
       {
@@ -206,6 +229,30 @@ describe("memberSlice", () => {
     expect(store.getState().member).toMatchObject({
       isUpdating: false,
       updateError: "Update failed",
+    })
+  })
+
+  it("deletes member via deleteMember thunk and tracks loading and error states", async () => {
+    const controllerSpy = vi
+      .spyOn(memberController, "deleteMemberController")
+      .mockResolvedValueOnce(SAMPLE_MEMBERS[0])
+
+    await store.dispatch(deleteMember("mem-001"))
+
+    expect(controllerSpy).toHaveBeenCalledWith("mem-001")
+    expect(store.getState().member).toMatchObject({
+      isDeleting: false,
+      deletingMemberId: null,
+      deleteError: null,
+    })
+
+    controllerSpy.mockRejectedValueOnce(new Error("Delete failed"))
+    await store.dispatch(deleteMember("mem-001"))
+
+    expect(store.getState().member).toMatchObject({
+      isDeleting: false,
+      deletingMemberId: null,
+      deleteError: "Delete failed",
     })
   })
 

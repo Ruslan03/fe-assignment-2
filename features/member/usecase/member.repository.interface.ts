@@ -12,4 +12,5 @@ export interface IMemberRepository {
     id: string,
     payload: UpdateMemberPayload
   ) => Promise<MemberType>
+  deleteMember: (id: string) => Promise<MemberType>
 }

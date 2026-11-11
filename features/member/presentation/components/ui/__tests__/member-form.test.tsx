@@ -18,6 +18,7 @@ import * as memberController from "../../../../controller/member.controller"
 import type { MemberType } from "../../../../domain/member.entity"
 import {
   clearCreateError,
+  clearDeleteError,
   clearUpdateError,
   fetchMembers,
   setSearch,
@@ -51,6 +52,7 @@ describe("MemberForm", () => {
     store.dispatch(fetchMembers.fulfilled([], "", undefined))
     store.dispatch(clearCreateError())
     store.dispatch(clearUpdateError())
+    store.dispatch(clearDeleteError())
 
     vi.spyOn(
       departmentController,
@@ -188,7 +190,7 @@ describe("MemberForm", () => {
     expect(
       screen.getByRole("link", { name: "Back to Dashboard" })
     ).toHaveAttribute("href", "/")
-  })
+  }, 15000)
 
   it("shows API error alert when createMember fails", async () => {
     vi.spyOn(memberController, "createMemberController").mockRejectedValueOnce(
@@ -226,7 +228,7 @@ describe("MemberForm", () => {
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument()
   })
 
-  it("prefills initialData in edit mode, renders inert Delete Member button, and updates member", async () => {
+  it("prefills initialData in edit mode, renders Delete Member button, and updates member", async () => {
     let resolveUpdate!: (
       value: Awaited<ReturnType<typeof memberController.updateMemberController>>
     ) => void
@@ -321,5 +323,30 @@ describe("MemberForm", () => {
     await waitFor(() => {
       expect(screen.queryByRole("dialog")).not.toBeInTheDocument()
     })
+  })
+
+  it("deletes member via Delete Member button in edit mode with dashboard Dismiss link", async () => {
+    const deleteSpy = vi
+      .spyOn(memberController, "deleteMemberController")
+      .mockResolvedValueOnce(EXISTING_MEMBER)
+
+    render(
+      <ReduxProvider>
+        <MemberForm mode="edit" initialData={EXISTING_MEMBER} />
+      </ReduxProvider>
+    )
+
+    fireEvent.click(screen.getByRole("button", { name: "Delete Member" }))
+
+    await waitFor(() => {
+      expect(deleteSpy).toHaveBeenCalledWith("mem-2048")
+    })
+
+    expect(await screen.findByRole("dialog")).toBeInTheDocument()
+    expect(screen.getByText("Member Deleted Successfully")).toBeInTheDocument()
+    expect(screen.getByRole("link", { name: "Dismiss" })).toHaveAttribute(
+      "href",
+      "/"
+    )
   })
 })

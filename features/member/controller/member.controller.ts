@@ -5,6 +5,7 @@ import type {
 import { MemberService } from "../infrastructure/api/member.service"
 import {
   createMemberUseCase,
+  deleteMemberUseCase,
   getAllMembersUseCase,
   getMemberByIdUseCase,
   updateMemberUseCase,
@@ -35,4 +36,10 @@ export async function updateMemberController(
   const repo = new MemberService()
 
   return updateMemberUseCase(repo, id, payload)
+}
+
+export async function deleteMemberController(id: string) {
+  const repo = new MemberService()
+
+  return deleteMemberUseCase(repo, id)
 }

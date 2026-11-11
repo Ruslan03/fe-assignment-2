@@ -32,3 +32,7 @@ export async function updateMemberUseCase(
 ) {
   return repo.updateMember(id, payload)
 }
+
+export async function deleteMemberUseCase(repo: IMemberRepository, id: string) {
+  return repo.deleteMember(id)
+}

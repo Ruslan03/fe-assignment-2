@@ -5,6 +5,7 @@ import { injectReducer, type RootState } from "@/shared/presentation/store"
 import type { MemberType } from "../../domain/member.entity"
 import {
   createMember,
+  deleteMember,
   fetchMemberById,
   fetchMembers,
   updateMember,
@@ -22,6 +23,9 @@ export interface MemberState {
   createError: string | null
   isUpdating: boolean
   updateError: string | null
+  isDeleting: boolean
+  deletingMemberId: string | null
+  deleteError: string | null
 }
 
 declare module "@/shared/presentation/store" {
@@ -42,6 +46,9 @@ export const initialMemberState: MemberState = {
   createError: null,
   isUpdating: false,
   updateError: null,
+  isDeleting: false,
+  deletingMemberId: null,
+  deleteError: null,
 }
 
 export const memberSlice = createSlice({
@@ -57,10 +64,19 @@ export const memberSlice = createSlice({
     clearUpdateError: (state) => {
       state.updateError = null
     },
+    clearDeleteError: (state) => {
+      state.deleteError = null
+    },
     clearSelectedMember: (state) => {
       state.selectedMember = null
       state.isDetailLoading = false
       state.detailError = null
+    },
+    removeMemberFromState: (state, action: PayloadAction<string>) => {
+      state.items = state.items.filter((item) => item.id !== action.payload)
+      if (state.selectedMember?.id === action.payload) {
+        state.selectedMember = null
+      }
     },
   },
   extraReducers: (builder) => {
@@ -121,6 +137,21 @@ export const memberSlice = createSlice({
         state.isUpdating = false
         state.updateError = action.error.message ?? "Failed to update member"
       })
+      .addCase(deleteMember.pending, (state, action) => {
+        state.isDeleting = true
+        state.deletingMemberId = action.meta.arg
+        state.deleteError = null
+      })
+      .addCase(deleteMember.fulfilled, (state) => {
+        state.isDeleting = false
+        state.deletingMemberId = null
+        state.deleteError = null
+      })
+      .addCase(deleteMember.rejected, (state, action) => {
+        state.isDeleting = false
+        state.deletingMemberId = null
+        state.deleteError = action.error.message ?? "Failed to delete member"
+      })
   },
 })
 
@@ -128,7 +159,9 @@ export const {
   setSearch,
   clearCreateError,
   clearUpdateError,
+  clearDeleteError,
   clearSelectedMember,
+  removeMemberFromState,
 } = memberSlice.actions
 export const memberReducer = memberSlice.reducer
 

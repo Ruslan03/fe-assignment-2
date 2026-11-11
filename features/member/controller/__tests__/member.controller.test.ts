@@ -7,6 +7,7 @@ import type {
 import { MemberService } from "../../infrastructure/api/member.service"
 import {
   createMemberController,
+  deleteMemberController,
   getAllMemberController,
   getMemberByIdController,
   updateMemberController,
@@ -82,5 +83,15 @@ describe("member.controller", () => {
     })
     expect(spy).toHaveBeenCalledWith("mem-001", { role: "Staff Engineer" })
     expect(member).toEqual(updatedMember)
+  })
+
+  it("deletes member through MemberService and usecase", async () => {
+    const spy = vi
+      .spyOn(MemberService.prototype, "deleteMember")
+      .mockResolvedValue(MOCK_MEMBERS[0])
+
+    const member = await deleteMemberController("mem-001")
+    expect(spy).toHaveBeenCalledWith("mem-001")
+    expect(member).toEqual(MOCK_MEMBERS[0])
   })
 })

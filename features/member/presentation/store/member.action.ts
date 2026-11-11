@@ -2,6 +2,7 @@ import { createAsyncThunk } from "@reduxjs/toolkit"
 
 import {
   createMemberController,
+  deleteMemberController,
   getAllMemberController,
   getMemberByIdController,
   updateMemberController,
@@ -36,4 +37,9 @@ export const updateMember = createAsyncThunk(
   "member/updateMember",
   async ({ id, payload }: { id: string; payload: UpdateMemberPayload }) =>
     updateMemberController(id, payload)
+)
+
+export const deleteMember = createAsyncThunk(
+  "member/deleteMember",
+  async (id: string) => deleteMemberController(id)
 )
