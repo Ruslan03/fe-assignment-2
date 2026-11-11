@@ -28,7 +28,7 @@ export function LeadingIconControl({
           data-slot={`${slotName}-icon`}
           aria-hidden="true"
           className={cn(
-            "pointer-events-none absolute left-3 flex items-center justify-center text-muted-foreground [&_svg]:size-4 [&_svg]:shrink-0",
+            "pointer-events-none absolute left-3 flex items-center justify-center text-placeholder [&_svg]:size-3.5 [&_svg]:shrink-0",
             disabled && "opacity-50",
             iconClassName
           )}

@@ -10,10 +10,14 @@ const avatarVariants = cva(
         default: "bg-primary text-primary-foreground",
         soft: "bg-primary/10 text-primary",
         secondary: "bg-secondary text-secondary-foreground",
+        "soft-primary": "bg-surface-tint text-primary",
+        "soft-info": "bg-surface-tint text-info",
+        "soft-muted": "bg-surface-tonal text-muted-foreground",
+        "soft-warning": "bg-surface-tint text-status-warning-dot",
       },
       shape: {
         circle: "rounded-full",
-        rounded: "rounded-2xl",
+        rounded: "rounded-xl",
       },
       size: {
         sm: "size-8 text-xs",
@@ -22,6 +26,13 @@ const avatarVariants = cva(
         xl: "size-20 text-2xl font-bold",
       },
     },
+    compoundVariants: [
+      {
+        shape: "rounded",
+        size: "xl",
+        class: "rounded-2xl",
+      },
+    ],
     defaultVariants: {
       variant: "default",
       shape: "circle",

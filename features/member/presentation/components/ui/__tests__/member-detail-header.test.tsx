@@ -51,12 +51,10 @@ describe("MemberDetailHeader", () => {
     )
 
     expect(controllerSpy).toHaveBeenCalledWith("mem-2048")
+    expect(screen.queryByRole("heading")).not.toBeInTheDocument()
     expect(
-      screen.getByRole("heading", {
-        level: 2,
-        name: "Loading member details...",
-      })
-    ).toBeInTheDocument()
+      screen.queryByText("Loading member details...")
+    ).not.toBeInTheDocument()
 
     await act(async () => {
       resolvePending(MOCK_MEMBER)

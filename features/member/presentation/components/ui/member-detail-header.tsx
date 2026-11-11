@@ -53,17 +53,7 @@ export function MemberDetailHeader({ memberId }: MemberDetailHeaderProps) {
     selectedMember && selectedMember.id === memberId ? selectedMember : null
 
   if (isDetailLoading || !member) {
-    return (
-      <Header
-        title="Member Detail"
-        subtitle={
-          isDetailLoading
-            ? "Loading member details..."
-            : `ID: #${memberId.toUpperCase()}`
-        }
-        backHref="/"
-      />
-    )
+    return null
   }
 
   const isActive = member.status === "active"
@@ -80,7 +70,7 @@ export function MemberDetailHeader({ memberId }: MemberDetailHeaderProps) {
         <>
           <span>{member.name}</span>
           <StatusBadge
-            variant={isActive ? "success" : "muted"}
+            variant={isActive ? "success" : "warning"}
             className="tracking-normal"
           >
             {isActive ? "Active" : "Inactive"}
@@ -91,7 +81,7 @@ export function MemberDetailHeader({ memberId }: MemberDetailHeaderProps) {
         <>
           <Badge
             variant="secondary"
-            className="rounded-md font-mono font-normal text-muted-foreground"
+            className="rounded-md bg-surface-subtle px-2 py-0.5 font-mono text-[11px] font-normal text-muted-foreground"
           >
             ID: {formattedId}
           </Badge>

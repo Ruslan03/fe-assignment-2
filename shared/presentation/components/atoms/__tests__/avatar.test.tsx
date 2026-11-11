@@ -36,5 +36,18 @@ describe("Avatar", () => {
     expect(xlAvatar).toHaveAttribute("data-size", "xl")
     expect(xlAvatar).toHaveClass("rounded-2xl", "size-20", "custom-avatar")
   })
+
+  it("supports tonal soft variants and rounded-xl for standard sizes", () => {
+    render(
+      <Avatar variant="soft-primary" shape="rounded" size="md">
+        AR
+      </Avatar>
+    )
+
+    const avatar = screen.getByText("AR")
+    expect(avatar).toHaveAttribute("data-variant", "soft-primary")
+    expect(avatar).toHaveAttribute("data-shape", "rounded")
+    expect(avatar).toHaveClass("rounded-xl", "bg-surface-tint", "text-primary", "size-9")
+  })
 })
 

@@ -10,6 +10,7 @@ import { clearMemberAnalytics } from "@analytics/presentation/store"
 import * as departmentController from "@department/controller/department.controller"
 import * as employmentTypeController from "@employment-type/controller/employment-type.controller"
 import * as memberController from "@member/controller/member.controller"
+import type { MemberType } from "@member/domain/member.entity"
 import {
   clearSelectedMember,
   clearUpdateError,
@@ -95,6 +96,58 @@ describe("ViewMemberPage", () => {
     ).toBeInTheDocument()
     expect(
       screen.getByRole("button", { name: "Save Changes" })
+    ).toBeInTheDocument()
+  })
+
+  it("renders a centered loading spinner on the page instead of loading text in the header while fetching member details", async () => {
+    let resolvePending!: (member: MemberType) => void
+    const pendingPromise = new Promise<MemberType>((resolve) => {
+      resolvePending = resolve
+    })
+
+    vi.spyOn(memberController, "getMemberByIdController").mockReturnValueOnce(
+      pendingPromise
+    )
+
+    render(
+      <ReduxProvider>
+        <ViewMemberPage memberId="mem-001" />
+      </ReduxProvider>
+    )
+
+    expect(screen.queryByRole("heading")).not.toBeInTheDocument()
+
+    const spinner = screen.getByRole("status", {
+      name: "Loading member details...",
+    })
+    expect(spinner).toBeInTheDocument()
+    expect(spinner.parentElement).toHaveClass(
+      "flex-1",
+      "items-center",
+      "justify-center"
+    )
+    expect(screen.getByText("Loading member details...")).toBeInTheDocument()
+
+    await act(async () => {
+      resolvePending({
+        id: "mem-001",
+        name: "Ruslan Wanandi",
+        email: "ruslan.wanandi@company.com",
+        role: "Front-end Engineer",
+        department: "Engineering",
+        employmentType: "Full-Time",
+        bio: "Frontend architecture lead.",
+        status: "active",
+        joinDate: "2025-03-10T09:00:00.000Z",
+      })
+      await Promise.resolve()
+    })
+
+    expect(
+      screen.queryByRole("status", { name: "Loading member details..." })
+    ).not.toBeInTheDocument()
+    expect(
+      screen.getByRole("heading", { level: 1, name: /Ruslan Wanandi/i })
     ).toBeInTheDocument()
   })
 

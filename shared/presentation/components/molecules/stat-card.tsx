@@ -7,15 +7,15 @@ import { Card, CardContent } from "@atoms/card"
 import { Text } from "@atoms/text"
 
 const statCardIconVariants = cva(
-  "flex size-9 shrink-0 items-center justify-center rounded-lg [&_svg]:size-4",
+  "flex size-8 shrink-0 items-center justify-center rounded-sm [&_svg]:size-4",
   {
     variants: {
       variant: {
-        default: "bg-primary/10 text-primary",
-        info: "bg-sky-500/10 text-sky-600",
-        muted: "bg-secondary text-muted-foreground",
-        warning: "bg-amber-500/10 text-amber-600",
-        success: "bg-emerald-500/10 text-emerald-600",
+        default: "bg-surface-subtle text-primary",
+        info: "bg-surface-subtle text-info",
+        muted: "bg-surface-subtle text-muted-foreground",
+        warning: "bg-surface-subtle text-status-warning-dot",
+        success: "bg-status-success text-status-success-dot",
         destructive: "bg-destructive/10 text-destructive",
       },
     },
@@ -25,21 +25,24 @@ const statCardIconVariants = cva(
   }
 )
 
-const statCardBadgeVariants = cva("rounded-md font-medium", {
-  variants: {
-    variant: {
-      default: "bg-primary/10 text-primary",
-      info: "bg-sky-500/10 text-sky-700",
-      muted: "bg-secondary text-muted-foreground",
-      warning: "bg-amber-500/10 text-amber-700",
-      success: "bg-emerald-500/10 text-emerald-700",
-      destructive: "bg-destructive/10 text-destructive",
+const statCardBadgeVariants = cva(
+  "rounded-xl px-2 py-0.5 text-[11px] leading-[14px] font-semibold",
+  {
+    variants: {
+      variant: {
+        default: "bg-surface-tonal text-primary",
+        info: "bg-info-surface text-info",
+        muted: "bg-surface-tonal text-muted-foreground",
+        warning: "bg-status-warning text-status-warning-dot",
+        success: "bg-status-success text-status-success-foreground",
+        destructive: "bg-destructive/10 text-destructive",
+      },
     },
-  },
-  defaultVariants: {
-    variant: "default",
-  },
-})
+    defaultVariants: {
+      variant: "default",
+    },
+  }
+)
 
 export interface StatCardProps extends VariantProps<
   typeof statCardIconVariants
@@ -61,13 +64,13 @@ export function StatCard({
   className,
 }: StatCardProps) {
   return (
-    <Card size="sm" className={cn("justify-between py-5", className)}>
-      <CardContent className="gap-3">
-        <div className="flex items-start justify-between gap-3">
+    <Card size="sm" className={cn("justify-between p-4", className)}>
+      <CardContent className="gap-2 p-0">
+        <div className="flex items-center justify-between gap-3">
           <Text
             as="span"
             variant="caption"
-            className="font-semibold tracking-wider uppercase"
+            className="text-[11px] leading-[14px] font-medium tracking-wider text-muted-foreground uppercase"
           >
             {label}
           </Text>
@@ -85,7 +88,7 @@ export function StatCard({
         <Text
           as="p"
           variant="h2"
-          className="text-3xl font-bold tracking-tight text-foreground"
+          className="text-[32px] leading-10 font-semibold tracking-tight text-foreground"
         >
           {value}
         </Text>

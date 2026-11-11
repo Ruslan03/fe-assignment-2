@@ -27,9 +27,12 @@ export interface DataTableColumn<TData> {
 export interface DataTableSearchProps {
   value: string
   onChange: (value: string) => void
+  onClear?: () => void
+  clearLabel?: string
   placeholder?: string
   ariaLabel?: string
   icon?: React.ReactNode
+  className?: string
   containerClassName?: string
 }
 
@@ -51,6 +54,7 @@ export interface DataTableProps<TData> {
   error?: string | null
   loadingMessage?: React.ReactNode
   emptyMessage?: React.ReactNode
+  emptyState?: React.ReactNode
   className?: string
 }
 
@@ -96,9 +100,12 @@ export function DataTable<TData>({
   error = null,
   loadingMessage = "Loading data...",
   emptyMessage = "No data found.",
+  emptyState,
   className,
 }: DataTableProps<TData>) {
   const showToolbar = Boolean(search || toolbar)
+  const showEmptyState =
+    !isLoading && !error && data.length === 0 && Boolean(emptyState)
   const totalColumns = columns.length + (selection ? 1 : 0)
   const selectedKeySet = new Set(selection?.selectedKeys ?? [])
   const rowKeys = data.map((row, rowIndex) => getRowKey(row, rowIndex))
@@ -164,7 +171,11 @@ export function DataTable<TData>({
       const isSelected = Boolean(selection && selectedKeySet.has(rowKey))
 
       return (
-        <TableRow key={rowKey} data-state={isSelected ? "selected" : undefined}>
+        <TableRow
+          key={rowKey}
+          data-state={isSelected ? "selected" : undefined}
+          className="h-16"
+        >
           {selection && (
             <TableCell className="w-10 px-4 py-3">
               <Checkbox
@@ -194,64 +205,71 @@ export function DataTable<TData>({
   return (
     <section
       className={cn(
-        "overflow-hidden rounded-xl border border-border bg-card shadow-xs",
+        "overflow-hidden rounded-lg bg-card shadow-xs ring-1 ring-border/60",
         className
       )}
     >
       {showToolbar && (
-        <div className="flex flex-wrap items-center justify-between gap-4 border-b border-border p-4">
+        <div className="flex flex-wrap items-center justify-between gap-4 bg-card p-4">
           {search && (
             <IconInput
               icon={search.icon ?? <Search />}
               type="search"
               placeholder={search.placeholder ?? "Search..."}
               aria-label={search.ariaLabel ?? "Search"}
-              containerClassName={cn("max-w-sm", search.containerClassName)}
+              className={cn("border-border/80", search.className)}
+              containerClassName={cn("max-w-md", search.containerClassName)}
               value={search.value}
               onChange={(event) => search.onChange(event.target.value)}
+              onClear={search.onClear}
+              clearLabel={search.clearLabel}
             />
           )}
           {toolbar}
         </div>
       )}
 
-      <Table>
-        <TableHeader className="bg-muted/40">
-          <TableRow className="hover:bg-transparent">
-            {selection && (
-              <TableHead className="w-10 px-4 py-3">
-                <Checkbox
-                  checked={
-                    allSelected ? true : someSelected ? "indeterminate" : false
-                  }
-                  disabled={data.length === 0}
-                  onCheckedChange={handleToggleAll}
-                  aria-label={selection.selectAllLabel ?? "Select all rows"}
-                />
-              </TableHead>
-            )}
-            {columns.map((column) => (
-              <TableHead
-                key={column.key}
-                className={cn(
-                  "px-4 py-3 text-xs font-semibold tracking-wider text-muted-foreground",
-                  column.headerClassName
-                )}
-              >
-                {column.header}
-              </TableHead>
-            ))}
-          </TableRow>
-        </TableHeader>
+      {showEmptyState ? (
+        emptyState
+      ) : (
+        <Table>
+          <TableHeader className="bg-surface-subtle">
+            <TableRow className="hover:bg-transparent">
+              {selection && (
+                <TableHead className="w-10 px-4 py-3">
+                  <Checkbox
+                    checked={
+                      allSelected ? true : someSelected ? "indeterminate" : false
+                    }
+                    disabled={data.length === 0}
+                    onCheckedChange={handleToggleAll}
+                    aria-label={selection.selectAllLabel ?? "Select all rows"}
+                  />
+                </TableHead>
+              )}
+              {columns.map((column) => (
+                <TableHead
+                  key={column.key}
+                  className={cn(
+                    "px-4 py-3 text-[11px] font-semibold tracking-wider text-muted-foreground",
+                    column.headerClassName
+                  )}
+                >
+                  {column.header}
+                </TableHead>
+              ))}
+            </TableRow>
+          </TableHeader>
 
-        <TableBody
-          className={cn(
-            isLoading && data.length > 0 && "opacity-60 transition-opacity"
-          )}
-        >
-          {renderBody()}
-        </TableBody>
-      </Table>
+          <TableBody
+            className={cn(
+              isLoading && data.length > 0 && "opacity-60 transition-opacity"
+            )}
+          >
+            {renderBody()}
+          </TableBody>
+        </Table>
+      )}
     </section>
   )
 }

@@ -61,18 +61,18 @@ export function MemberAnalyticsStats({ memberId }: MemberAnalyticsStatsProps) {
   ]
 
   return (
-    <div className="grid w-full grid-cols-2 divide-x divide-border rounded-xl border border-border/50 bg-muted/50 py-3">
+    <div className="grid w-full grid-cols-2 divide-x divide-border/60 rounded-lg border border-border/50 bg-surface-subtle py-3">
       {stats.map((stat) => (
         <div
           key={stat.label}
           className="flex flex-col items-center justify-center gap-0.5 px-3"
         >
-          <Text variant="large" className="text-foreground">
+          <Text variant="large" className="text-lg font-semibold text-foreground">
             {stat.value}
           </Text>
           <Text
             variant="caption"
-            className="text-[11px] font-semibold tracking-wider uppercase"
+            className="text-[11px] font-medium tracking-wider uppercase"
           >
             {stat.label}
           </Text>

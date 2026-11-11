@@ -42,7 +42,7 @@ export function ExportMemberButton() {
         disabled={isExporting}
         onClick={handleExport}
       >
-        <Download />
+        <Download className="text-muted-foreground" />
         {isExporting ? "Exporting..." : "Export CSV"}
       </Button>
     </>

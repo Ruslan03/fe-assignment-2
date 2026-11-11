@@ -68,5 +68,44 @@ describe("IconInput", () => {
     expect(input).toBeDisabled()
     expect(input).toHaveClass("pl-9", "bg-white")
   })
+
+  it("renders a clear button when value is non-empty and onClear is provided", () => {
+    const onClear = vi.fn()
+    const { rerender } = render(
+      <IconInput
+        icon={<Search />}
+        type="search"
+        aria-label="Search members"
+        value=""
+        onChange={vi.fn()}
+        onClear={onClear}
+        clearLabel="Clear search input"
+      />
+    )
+
+    expect(
+      screen.queryByRole("button", { name: "Clear search input" })
+    ).not.toBeInTheDocument()
+
+    rerender(
+      <IconInput
+        icon={<Search />}
+        type="search"
+        aria-label="Search members"
+        value="Samantha Williams"
+        onChange={vi.fn()}
+        onClear={onClear}
+        clearLabel="Clear search input"
+      />
+    )
+
+    const input = screen.getByRole("searchbox", { name: "Search members" })
+    const clearButton = screen.getByRole("button", {
+      name: "Clear search input",
+    })
+    expect(input).toHaveClass("pr-9")
+    fireEvent.click(clearButton)
+    expect(onClear).toHaveBeenCalledTimes(1)
+  })
 })
 

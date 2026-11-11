@@ -73,5 +73,28 @@ describe("useDebounce", () => {
     })
     expect(result.current).toBe("end")
   })
+
+  it("flushes immediately on the next microtask when immediateWhen matches", async () => {
+    const { result, rerender } = renderHook(
+      ({ value }) =>
+        useDebounce(value, 1000, {
+          immediateWhen: (current) => current === "",
+        }),
+      { initialProps: { value: "initial" } }
+    )
+
+    rerender({ value: "updated" })
+    act(() => {
+      vi.advanceTimersByTime(1000)
+    })
+    expect(result.current).toBe("updated")
+
+    rerender({ value: "" })
+    await act(async () => {
+      await Promise.resolve()
+    })
+
+    expect(result.current).toBe("")
+  })
 })
 

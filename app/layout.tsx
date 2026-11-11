@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import { Geist_Mono, Inter } from "next/font/google"
+import { Inter, JetBrains_Mono } from "next/font/google"
 
 import { ReduxProvider } from "@/shared/presentation/store/provider";
 
@@ -9,7 +9,7 @@ import "./globals.css"
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-sans' })
 
-const fontMono = Geist_Mono({
+const fontMono = JetBrains_Mono({
   subsets: ["latin"],
   variable: "--font-mono",
 })

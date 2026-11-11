@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react"
 import Link from "next/link"
+import { SearchX } from "lucide-react"
 
 import { formatDate } from "@/shared/presentation/helpers/format-date"
 import { getInitials } from "@/shared/presentation/helpers/get-initials"
@@ -14,6 +15,7 @@ import { Avatar } from "@atoms/avatar"
 import { Badge } from "@atoms/badge"
 import { Button } from "@atoms/button"
 import { Text } from "@atoms/text"
+import { EmptyState } from "@molecules/empty-state"
 import { StatusBadge } from "@molecules/status-badge"
 import { DataTable, type DataTableColumn } from "@organisms/data-table"
 
@@ -32,6 +34,13 @@ function getMemberDetailHref(id: string): string {
   return `/members/${encodeURIComponent(id)}`
 }
 
+const MEMBER_AVATAR_VARIANTS = [
+  "soft-primary",
+  "soft-info",
+  "soft-muted",
+  "soft-warning",
+] as const
+
 function getMemberColumns(
   actionsDisabled: boolean
 ): DataTableColumn<MemberType>[] {
@@ -39,37 +48,49 @@ function getMemberColumns(
     {
       key: "member",
       header: "MEMBER",
-      render: (member) => (
+      render: (member, index) => (
         <Link
           href={getMemberDetailHref(member.id)}
-          className="group flex w-fit items-center gap-3 rounded-md focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+          className="group flex w-fit items-center gap-3 rounded-sm focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
         >
-          <Avatar variant="soft" shape="circle" size="md" aria-hidden="true">
+          <Avatar
+            variant={
+              MEMBER_AVATAR_VARIANTS[index % MEMBER_AVATAR_VARIANTS.length]
+            }
+            shape="rounded"
+            size="md"
+            aria-hidden="true"
+          >
             {getInitials(member.name)}
           </Avatar>
           <div className="flex flex-col">
             <Text
               variant="small"
-              className="font-medium text-foreground transition-colors group-hover:text-primary"
+              className="text-sm leading-5 font-semibold text-foreground transition-colors group-hover:text-primary"
             >
               {member.name}
             </Text>
-            <Text variant="caption">{member.email}</Text>
+            <Text variant="caption" className="leading-4">
+              {member.email}
+            </Text>
           </div>
         </Link>
       ),
     },
     {
       key: "role",
-      header: "ROLE/TITLE",
+      header: "ROLE / TITLE",
       accessor: "role",
-      cellClassName: "text-sm text-foreground",
+      cellClassName: "text-xs font-medium text-foreground",
     },
     {
       key: "department",
       header: "DEPARTMENT",
       render: (member) => (
-        <Badge variant="secondary" className="rounded-md px-2.5">
+        <Badge
+          variant="secondary"
+          className="rounded-md bg-surface-subtle px-2 py-0.5 text-[11px] font-medium text-foreground"
+        >
           {member.department}
         </Badge>
       ),
@@ -81,7 +102,7 @@ function getMemberColumns(
         const isActive = member.status === "active"
 
         return (
-          <StatusBadge variant={isActive ? "success" : "muted"}>
+          <StatusBadge variant={isActive ? "success" : "warning"}>
             {isActive ? "Active" : "Inactive"}
           </StatusBadge>
         )
@@ -90,7 +111,7 @@ function getMemberColumns(
     {
       key: "joinDate",
       header: "JOINED DATE",
-      cellClassName: "font-mono text-sm text-muted-foreground",
+      cellClassName: "font-mono text-xs text-muted-foreground",
       render: (member) => formatDate(member.joinDate),
     },
     {
@@ -127,7 +148,7 @@ function getMemberColumns(
             iconOnly
             disabled={actionsDisabled}
             aria-label={`Delete ${member.name}`}
-            className="text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+            className="text-destructive hover:bg-destructive/10 hover:text-destructive"
           />
         </div>
       ),
@@ -146,7 +167,9 @@ export function MemberList() {
     bulkDeleteError,
     isBulkDeleting,
   } = useAppSelector(selectMemberState)
-  const debouncedSearch = useDebounce(search, 1000)
+  const debouncedSearch = useDebounce(search, 500, {
+    immediateWhen: (value) => value === "",
+  })
   const [selectedIds, setSelectedIds] = useState<string[]>([])
 
   const validSelectedIds = useMemo(() => {
@@ -156,6 +179,18 @@ export function MemberList() {
 
   const actionsDisabled = validSelectedIds.length > 0 || isBulkDeleting
   const actionError = bulkDeleteError ?? deleteError
+  const emptySearchQuery = search.trim()
+    ? debouncedSearch.trim() || search.trim()
+    : ""
+
+  const handleSearchChange = (value: string) => {
+    setSelectedIds([])
+    dispatch(setSearch(value))
+  }
+
+  const handleClearSearch = () => {
+    handleSearchChange("")
+  }
 
   const columns = useMemo(
     () => getMemberColumns(actionsDisabled),
@@ -192,13 +227,29 @@ export function MemberList() {
         isLoading={isLoading}
         error={error}
         loadingMessage="Loading members..."
-        emptyMessage="No members found."
+        emptyState={
+          <EmptyState
+            icon={<SearchX />}
+            title="No members found"
+            description={
+              emptySearchQuery
+                ? `We couldn't find any members matching "${emptySearchQuery}". Try checking for typos or searching with different keywords.`
+                : "There are no members in the directory yet. Add a member to get started."
+            }
+            action={
+              emptySearchQuery ? (
+                <Button type="button" onClick={handleClearSearch}>
+                  Clear search
+                </Button>
+              ) : undefined
+            }
+          />
+        }
         search={{
           value: search,
-          onChange: (value) => {
-            setSelectedIds([])
-            dispatch(setSearch(value))
-          },
+          onChange: handleSearchChange,
+          onClear: handleClearSearch,
+          clearLabel: "Clear search input",
           placeholder: "Search by name, email, or role...",
           ariaLabel: "Search members",
         }}

@@ -8,14 +8,25 @@ export interface IdentityProps {
 
 export function Identity({ media, title, subtitle }: IdentityProps) {
     return (
-        <div className="flex gap-3 items-center">
+        <div className="flex items-center gap-2 py-1">
             <div>
                 {media}
             </div>
             <div className="flex flex-col">
-
-                <Text className="font-medium">{title}</Text>
-                <Text variant={'muted'} className="font-bold">{subtitle}</Text>
+                <Text
+                    as="span"
+                    variant="caption"
+                    className="text-xs leading-4 font-medium text-foreground"
+                >
+                    {title}
+                </Text>
+                <Text
+                    as="span"
+                    variant="caption"
+                    className="text-[11px] leading-[14px] font-semibold text-muted-foreground"
+                >
+                    {subtitle}
+                </Text>
             </div>
         </div>
     );

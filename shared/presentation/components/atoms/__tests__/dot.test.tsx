@@ -29,7 +29,7 @@ describe("Dot", () => {
 
     expect(dots[0]).toHaveAttribute("data-variant", "success")
     expect(dots[0]).toHaveAttribute("data-size", "md")
-    expect(dots[0]).toHaveClass("size-2", "bg-emerald-500")
+    expect(dots[0]).toHaveClass("size-2", "bg-status-success-dot")
 
     expect(dots[1]).toHaveAttribute("data-variant", "muted")
     expect(dots[1]).toHaveAttribute("data-size", "lg")

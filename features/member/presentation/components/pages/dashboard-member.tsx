@@ -13,7 +13,7 @@ export function DashboardMemberPage() {
         title="Members Directory"
         subtitle="Manage your organization team members, cross-functional roles, and workspace access levels."
         rightContent={
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
             <ExportMemberButton />
             <AddMemberButton />
           </div>

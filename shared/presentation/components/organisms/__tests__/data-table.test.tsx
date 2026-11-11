@@ -194,4 +194,31 @@ describe("DataTable", () => {
       "4"
     )
   })
+
+  it("renders custom emptyState without table headers and forwards search clear action", () => {
+    const onClear = vi.fn()
+
+    render(
+      <DataTable
+        columns={COLUMNS}
+        data={[]}
+        getRowKey={(row) => row.id}
+        search={{
+          value: "Samantha",
+          onChange: vi.fn(),
+          onClear,
+          clearLabel: "Clear filter",
+          ariaLabel: "Filter items",
+        }}
+        emptyState={<div>Custom Empty State</div>}
+      />
+    )
+
+    expect(screen.getByText("Custom Empty State")).toBeInTheDocument()
+    expect(screen.queryByRole("table")).not.toBeInTheDocument()
+    expect(screen.queryByText("NAME")).not.toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole("button", { name: "Clear filter" }))
+    expect(onClear).toHaveBeenCalledTimes(1)
+  })
 })

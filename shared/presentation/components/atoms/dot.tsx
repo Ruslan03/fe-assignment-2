@@ -6,8 +6,8 @@ const dotVariants = cva("inline-block shrink-0 rounded-full", {
   variants: {
     variant: {
       default: "bg-primary",
-      success: "bg-emerald-500",
-      warning: "bg-amber-500",
+      success: "bg-status-success-dot",
+      warning: "bg-status-warning-dot",
       destructive: "bg-destructive",
       muted: "bg-muted-foreground",
     },

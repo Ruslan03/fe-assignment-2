@@ -1,6 +1,8 @@
 "use client"
 
 import { useAppSelector } from "@/shared/presentation/store/hooks"
+import { Spinner } from "@atoms/spinner"
+import { Text } from "@atoms/text"
 
 import { selectMemberState } from "../../store"
 import { MemberForm } from "./member-form"
@@ -14,13 +16,22 @@ export function MemberDetailContent({ memberId }: MemberDetailContentProps) {
   const { selectedMember, isDetailLoading, detailError } =
     useAppSelector(selectMemberState)
 
-  const member =
-    memberId && selectedMember && selectedMember.id === memberId
-      ? selectedMember
-      : null
-
-  if (!memberId || isDetailLoading || detailError || !member) {
+  if (!memberId || detailError) {
     return null
+  }
+
+  const member =
+    selectedMember && selectedMember.id === memberId ? selectedMember : null
+
+  if (isDetailLoading || !member) {
+    return (
+      <div className="flex flex-1 flex-col items-center justify-center gap-3 py-12">
+        <Spinner size="lg" label="Loading member details..." />
+        <Text variant="muted" className="text-xs font-medium">
+          Loading member details...
+        </Text>
+      </div>
+    )
   }
 
   return (

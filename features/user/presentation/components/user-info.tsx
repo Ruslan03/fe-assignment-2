@@ -3,10 +3,8 @@ import { User } from "lucide-react";
 import { getCurentUserController } from "../../controller/user.controller";
 
 const UserAvatar = () => (
-    <div className="bg-primary p-3 flex flex-wrap items-center justify-center rounded-xl">
-        <div>
-            <User className="text-white" />
-        </div>
+    <div className="flex size-8 items-center justify-center rounded-xl bg-primary text-primary-foreground">
+        <User className="size-3.5" />
     </div>
 )
 

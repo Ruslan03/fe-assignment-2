@@ -190,7 +190,7 @@ export function MemberForm({ mode = "create", initialData }: MemberFormProps) {
                 ? "Update personal records, contact credentials, and communication metadata."
                 : "Add personal records, contact credentials, and communication metadata."
             }
-            className="rounded-none border-b border-border shadow-none ring-0"
+            className="rounded-none border-b border-border/60 shadow-none ring-0"
             contentClassName="grid grid-cols-1 gap-6 md:grid-cols-2"
           >
             <TextField
@@ -281,7 +281,7 @@ export function MemberForm({ mode = "create", initialData }: MemberFormProps) {
             />
           </SectionCard>
 
-          <CardFooter className="flex-wrap items-center justify-end gap-3 border-t border-border bg-muted/30 py-4">
+          <CardFooter className="flex-wrap items-center justify-end gap-2 border-t border-border/60 bg-surface-subtle/60 py-4">
             {isEdit && initialData && (
               <DeleteMemberButton
                 member={initialData}

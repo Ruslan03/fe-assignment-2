@@ -21,10 +21,10 @@ export function MemberProfileCard({ member }: MemberProfileCardProps) {
         </Avatar>
 
         <div className="flex flex-col items-center gap-1">
-          <Text variant="large" className="text-foreground">
+          <Text variant="large" className="text-base font-semibold text-foreground">
             {member.name}
           </Text>
-          <Text variant="small" className="font-medium text-primary">
+          <Text variant="small" className="text-xs font-medium text-primary">
             {member.role}
           </Text>
           <Text variant="caption">{member.email}</Text>

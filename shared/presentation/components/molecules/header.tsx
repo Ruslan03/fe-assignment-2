@@ -26,14 +26,18 @@ function renderSubtitle(subtitle: React.ReactNode) {
 
   if (typeof subtitle === "string" || typeof subtitle === "number") {
     return (
-      <Text as="h2" variant="lead">
+      <Text
+        as="h2"
+        variant="muted"
+        className="text-sm leading-5 font-normal text-muted-foreground"
+      >
         {subtitle}
       </Text>
     )
   }
 
   return (
-    <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+    <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
       {subtitle}
     </div>
   )
@@ -83,14 +87,14 @@ export function Header({
   const renderedSubtitle = renderSubtitle(subtitle)
 
   return (
-    <div className="flex items-center justify-between gap-4 py-8">
+    <div className="flex items-center justify-between gap-4">
       <div className="flex items-center gap-4">
         {backButton}
-        <div className="flex flex-col gap-2">
+        <div className="flex flex-col gap-0.5">
           <Text
             as="h1"
-            variant="h1"
-            className="flex flex-wrap items-center gap-3 font-medium"
+            variant="h3"
+            className="flex flex-wrap items-center gap-3 text-2xl leading-8 font-semibold tracking-tight text-foreground"
           >
             {title}
           </Text>

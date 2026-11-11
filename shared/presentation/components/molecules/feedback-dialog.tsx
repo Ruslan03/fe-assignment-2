@@ -86,7 +86,7 @@ export function FeedbackDialog({
         {children && <div className="px-6 pb-6">{children}</div>}
 
         {footer && (
-          <DialogFooter className="border-t border-border bg-muted/40 px-6 py-4 sm:justify-center">
+          <DialogFooter className="border-t border-border/60 bg-surface-subtle/60 px-6 py-4 sm:justify-center">
             {footer}
           </DialogFooter>
         )}

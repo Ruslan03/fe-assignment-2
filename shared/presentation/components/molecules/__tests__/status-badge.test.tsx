@@ -25,7 +25,7 @@ describe("StatusBadge", () => {
         <StatusBadge variant="success" dotSize="md" className="custom-pill">
           Active
         </StatusBadge>
-        <StatusBadge variant="muted" dotClassName="opacity-50">
+        <StatusBadge variant="warning" dotClassName="opacity-50">
           Inactive
         </StatusBadge>
       </>
@@ -36,13 +36,20 @@ describe("StatusBadge", () => {
     const dots = container.querySelectorAll('[data-slot="dot"]')
 
     expect(activeBadge).toHaveAttribute("data-variant", "success")
-    expect(activeBadge).toHaveClass("bg-emerald-500/10", "text-emerald-600", "custom-pill")
+    expect(activeBadge).toHaveClass(
+      "bg-status-success",
+      "text-status-success-foreground",
+      "custom-pill"
+    )
     expect(dots[0]).toHaveAttribute("data-variant", "success")
     expect(dots[0]).toHaveAttribute("data-size", "md")
 
-    expect(inactiveBadge).toHaveAttribute("data-variant", "muted")
-    expect(inactiveBadge).toHaveClass("bg-muted", "text-muted-foreground")
-    expect(dots[1]).toHaveAttribute("data-variant", "muted")
+    expect(inactiveBadge).toHaveAttribute("data-variant", "warning")
+    expect(inactiveBadge).toHaveClass(
+      "bg-status-warning",
+      "text-status-warning-foreground"
+    )
+    expect(dots[1]).toHaveAttribute("data-variant", "warning")
     expect(dots[1]).toHaveClass("opacity-50")
   })
 })

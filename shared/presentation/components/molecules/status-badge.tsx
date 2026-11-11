@@ -5,20 +5,23 @@ import { cn } from "cn"
 import { Badge } from "@atoms/badge"
 import { Dot, type DotProps } from "@atoms/dot"
 
-const statusBadgeVariants = cva("gap-1.5 px-2.5", {
-  variants: {
-    variant: {
-      default: "bg-primary/10 text-primary",
-      success: "bg-emerald-500/10 text-emerald-600",
-      warning: "bg-amber-500/10 text-amber-600",
-      destructive: "bg-destructive/10 text-destructive",
-      muted: "bg-muted text-muted-foreground",
+const statusBadgeVariants = cva(
+  "gap-1.5 rounded-xl px-2 py-0.5 text-[11px] leading-[14px] font-semibold",
+  {
+    variants: {
+      variant: {
+        default: "bg-primary/10 text-primary",
+        success: "bg-status-success text-status-success-foreground",
+        warning: "bg-status-warning text-status-warning-foreground",
+        destructive: "bg-destructive/10 text-destructive",
+        muted: "bg-muted text-muted-foreground",
+      },
     },
-  },
-  defaultVariants: {
-    variant: "default",
-  },
-})
+    defaultVariants: {
+      variant: "default",
+    },
+  }
+)
 
 export interface StatusBadgeProps
   extends Omit<React.ComponentProps<typeof Badge>, "variant">,

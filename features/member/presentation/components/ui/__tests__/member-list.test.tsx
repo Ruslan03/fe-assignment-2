@@ -126,7 +126,8 @@ describe("MemberList", () => {
       await Promise.resolve()
     })
 
-    expect(screen.getByText("No members found.")).toBeInTheDocument()
+    expect(screen.getByText("No members found")).toBeInTheDocument()
+    expect(screen.queryByRole("table")).not.toBeInTheDocument()
 
     controllerSpy.mockResolvedValueOnce([
       {
@@ -160,6 +161,74 @@ describe("MemberList", () => {
     })
 
     expect(screen.getByText("Failed to load")).toBeInTheDocument()
+  })
+
+  it("renders rich empty state for unmatched search without table headers and clears search from button or input", async () => {
+    const controllerSpy = vi
+      .spyOn(memberController, "getAllMemberController")
+      .mockResolvedValueOnce(MOCK_MEMBERS)
+      .mockResolvedValueOnce([])
+      .mockResolvedValueOnce(MOCK_MEMBERS)
+      .mockResolvedValueOnce([])
+      .mockResolvedValueOnce(MOCK_MEMBERS)
+
+    render(
+      <ReduxProvider>
+        <MemberList />
+      </ReduxProvider>
+    )
+
+    await act(async () => {
+      await Promise.resolve()
+    })
+
+    const searchInput = screen.getByRole("searchbox", {
+      name: "Search members",
+    })
+    fireEvent.change(searchInput, { target: { value: "Samantha Williams" } })
+
+    await act(async () => {
+      vi.advanceTimersByTime(1000)
+      await Promise.resolve()
+    })
+
+    expect(screen.queryByRole("table")).not.toBeInTheDocument()
+    expect(screen.queryByText("MEMBER")).not.toBeInTheDocument()
+    expect(screen.getByText("No members found")).toBeInTheDocument()
+    expect(
+      screen.getByText(
+        'We couldn\'t find any members matching "Samantha Williams". Try checking for typos or searching with different keywords.'
+      )
+    ).toBeInTheDocument()
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: "Clear search" }))
+      await Promise.resolve()
+    })
+
+    expect(searchInput).toHaveValue("")
+    expect(controllerSpy).toHaveBeenNthCalledWith(3, undefined)
+    expect(screen.getByText("Ruslan Wanandi")).toBeInTheDocument()
+
+    fireEvent.change(searchInput, { target: { value: "Unknown Person" } })
+
+    await act(async () => {
+      vi.advanceTimersByTime(1000)
+      await Promise.resolve()
+    })
+
+    expect(screen.getByText("No members found")).toBeInTheDocument()
+
+    await act(async () => {
+      fireEvent.click(
+        screen.getByRole("button", { name: "Clear search input" })
+      )
+      await Promise.resolve()
+    })
+
+    expect(searchInput).toHaveValue("")
+    expect(controllerSpy).toHaveBeenNthCalledWith(5, undefined)
+    expect(screen.getByText("Ruslan Wanandi")).toBeInTheDocument()
   })
 
   it("deletes a member via DeleteMemberButton and removes the row on Dismiss", async () => {
