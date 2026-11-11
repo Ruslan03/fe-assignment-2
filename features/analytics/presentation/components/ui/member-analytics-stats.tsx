@@ -1,44 +1,45 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect } from "react"
 
+import {
+  useAppDispatch,
+  useAppSelector,
+} from "@/shared/presentation/store/hooks"
 import { Text } from "@atoms/text"
 
-import { getMemberAnalyticsController } from "../../../controller/analytics.controller"
-import type { MemberAnalyticsType } from "../../../domain/analytics.entity"
+import {
+  clearMemberAnalytics,
+  fetchMemberAnalytics,
+  selectAnalyticsState,
+} from "../../store"
 
 export interface MemberAnalyticsStatsProps {
   memberId: string
 }
 
-interface AnalyticsResult {
-  memberId: string
-  data: MemberAnalyticsType | null
-}
-
 export function MemberAnalyticsStats({ memberId }: MemberAnalyticsStatsProps) {
-  const [result, setResult] = useState<AnalyticsResult | null>(null)
+  const dispatch = useAppDispatch()
+  const {
+    memberAnalytics,
+    memberAnalyticsId,
+    isMemberAnalyticsLoading,
+    memberAnalyticsError,
+  } = useAppSelector(selectAnalyticsState)
 
   useEffect(() => {
-    let isActive = true
+    void dispatch(fetchMemberAnalytics(memberId))
+  }, [dispatch, memberId])
 
-    getMemberAnalyticsController(memberId)
-      .then((data) => {
-        if (!isActive) return
-        setResult({ memberId, data })
-      })
-      .catch(() => {
-        if (!isActive) return
-        setResult({ memberId, data: null })
-      })
-
+  useEffect(() => {
     return () => {
-      isActive = false
+      dispatch(clearMemberAnalytics())
     }
-  }, [memberId])
+  }, [dispatch])
 
-  const isLoading = result?.memberId !== memberId
-  const analytics = isLoading ? null : result.data
+  const isCurrentMember = memberAnalyticsId === memberId
+  const isLoading = isMemberAnalyticsLoading || !isCurrentMember
+  const analytics = isLoading || memberAnalyticsError ? null : memberAnalytics
 
   const stats = [
     {

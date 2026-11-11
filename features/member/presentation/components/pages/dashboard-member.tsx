@@ -1,3 +1,4 @@
+import { AnalyticsSummary } from "@analytics/presentation/components/ui/analytics-summary"
 import { Header } from "@molecules/header"
 import MainLayout from "@templates/main-layout"
 
@@ -16,6 +17,7 @@ export function DashboardMemberPage() {
           </div>
         }
       />
+      <AnalyticsSummary />
       <MemberList />
     </MainLayout>
   )

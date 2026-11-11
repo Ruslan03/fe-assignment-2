@@ -1,7 +1,10 @@
-import { afterEach, describe, expect, it, vi } from "vitest"
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import { act, render, screen } from "@testing-library/react"
 
 import * as analyticsController from "@analytics/controller/analytics.controller"
+import { clearMemberAnalytics } from "@analytics/presentation/store"
+import { store } from "@/shared/presentation/store"
+import { ReduxProvider } from "@/shared/presentation/store/provider"
 
 import type { MemberType } from "../../../../domain/member.entity"
 import { MemberProfileCard } from "../member-profile-card"
@@ -17,6 +20,10 @@ const MOCK_MEMBER: MemberType = {
 }
 
 describe("MemberProfileCard", () => {
+  beforeEach(() => {
+    store.dispatch(clearMemberAnalytics())
+  })
+
   afterEach(() => {
     vi.restoreAllMocks()
   })
@@ -30,7 +37,11 @@ describe("MemberProfileCard", () => {
       })
 
     await act(async () => {
-      render(<MemberProfileCard member={MOCK_MEMBER} />)
+      render(
+        <ReduxProvider>
+          <MemberProfileCard member={MOCK_MEMBER} />
+        </ReduxProvider>
+      )
       await Promise.resolve()
     })
 
@@ -45,4 +56,3 @@ describe("MemberProfileCard", () => {
     expect(screen.getByText("DEPLOYMENTS")).toBeInTheDocument()
   })
 })
-

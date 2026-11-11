@@ -6,6 +6,7 @@ vi.mock("@user/presentation/components/user-info", () => ({
 }))
 
 import * as analyticsController from "@analytics/controller/analytics.controller"
+import { clearMemberAnalytics } from "@analytics/presentation/store"
 import * as departmentController from "@department/controller/department.controller"
 import * as employmentTypeController from "@employment-type/controller/employment-type.controller"
 import * as memberController from "@member/controller/member.controller"
@@ -22,6 +23,7 @@ describe("ViewMemberPage", () => {
   beforeEach(() => {
     store.dispatch(clearSelectedMember())
     store.dispatch(clearUpdateError())
+    store.dispatch(clearMemberAnalytics())
 
     vi.spyOn(
       departmentController,
