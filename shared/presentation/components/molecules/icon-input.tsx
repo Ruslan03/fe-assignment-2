@@ -1,7 +1,9 @@
-import * as React from "react"
+import type * as React from "react"
 import { cn } from "cn"
 
-import { Input } from "../atoms/input"
+import { Input } from "@atoms/input"
+
+import { LeadingIconControl } from "./leading-icon-control"
 
 export interface IconInputProps extends React.ComponentProps<typeof Input> {
   icon: React.ReactNode
@@ -9,7 +11,6 @@ export interface IconInputProps extends React.ComponentProps<typeof Input> {
   iconClassName?: string
 }
 
-/** Molecule combining a leading left icon with the Input atom. */
 export function IconInput({
   icon,
   className,
@@ -19,27 +20,18 @@ export function IconInput({
   ...props
 }: IconInputProps) {
   return (
-    <div
-      data-slot="icon-input"
-      className={cn("relative flex w-full items-center", containerClassName)}
+    <LeadingIconControl
+      icon={icon}
+      disabled={disabled}
+      containerClassName={containerClassName}
+      iconClassName={iconClassName}
+      slotName="icon-input"
     >
-      <span
-        data-slot="icon-input-icon"
-        aria-hidden="true"
-        className={cn(
-          "pointer-events-none absolute left-3 flex items-center justify-center text-muted-foreground [&_svg]:size-4 [&_svg]:shrink-0",
-          disabled && "opacity-50",
-          iconClassName
-        )}
-      >
-        {icon}
-      </span>
       <Input
         disabled={disabled}
         className={cn("pl-9", className)}
         {...props}
       />
-    </div>
+    </LeadingIconControl>
   )
 }
-
