@@ -6,7 +6,6 @@ import { ReduxProvider } from "@/shared/presentation/store/provider";
 import { cn } from "@lib/utils";
 
 import "./globals.css"
-import MainLayout from '@/shared/presentation/components/templates/main-layout';
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-sans' })
 

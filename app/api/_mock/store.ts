@@ -80,7 +80,8 @@ export function getMembers(filters?: MemberFilterOptions): Member[] {
         const matchesSearch =
           member.name.toLowerCase().includes(search) ||
           member.email.toLowerCase().includes(search) ||
-          member.role.toLowerCase().includes(search)
+          member.role.toLowerCase().includes(search) ||
+          member.department.toLowerCase().includes(search)
         if (!matchesSearch) return false
       }
       if (department && member.department.toLowerCase() !== department) {

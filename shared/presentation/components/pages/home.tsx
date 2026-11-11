@@ -1,9 +1,22 @@
-import { MainNavbar } from "../organisms/main-navbar";
+import { Header } from "../molecules/header";
+import MainLayout from "../templates/main-layout";
+import AddMemberButton from "@/features/member/presentation/components/add-member-button";
+import { MemberList } from "@/features/member/presentation/components/member-list";
 
 export function HomePage() {
     return (
-        <section className="h-screen bg-base-01 flex flex-col gap-8">
-            <MainNavbar />
-        </section>
+        <MainLayout>
+            <Header
+                title="Members Directory"
+                subtitle="Manage your organization team members, cross-functional roles, and workspace access levels."
+                rightContent={
+                    <div>
+                        <AddMemberButton />
+                    </div>
+                }
+            />
+
+            <MemberList />
+        </MainLayout>
     );
 }

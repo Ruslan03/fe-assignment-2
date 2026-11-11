@@ -51,6 +51,45 @@ describe("In-Memory Mock API Routes", () => {
     expect(filteredJson.data[0].name).toBe("Alya Putri")
   })
 
+  it("GET /api/members handles search query string across name, email, role, and department", async () => {
+    const byNameRes = await getMembersRoute(
+      new Request("http://localhost/api/members?search=%20alya%20")
+    )
+    const byNameJson = await byNameRes.json()
+    expect(byNameRes.status).toBe(200)
+    expect(byNameJson.data).toHaveLength(1)
+    expect(byNameJson.data[0].id).toBe("mem-002")
+
+    const byEmailRes = await getMembersRoute(
+      new Request("http://localhost/api/members?search=BIMA.PRATAMA@")
+    )
+    const byEmailJson = await byEmailRes.json()
+    expect(byEmailJson.data).toHaveLength(1)
+    expect(byEmailJson.data[0].id).toBe("mem-003")
+
+    const byRoleRes = await getMembersRoute(
+      new Request("http://localhost/api/members?search=engineer&status=active")
+    )
+    const byRoleJson = await byRoleRes.json()
+    expect(byRoleJson.data.map((m: { id: string }) => m.id)).toEqual([
+      "mem-001",
+      "mem-003",
+    ])
+
+    const byDeptRes = await getMembersRoute(
+      new Request("http://localhost/api/members?search=marketing")
+    )
+    const byDeptJson = await byDeptRes.json()
+    expect(byDeptJson.data).toHaveLength(1)
+    expect(byDeptJson.data[0].id).toBe("mem-006")
+
+    const emptySearchRes = await getMembersRoute(
+      new Request("http://localhost/api/members?search=%20%20")
+    )
+    const emptySearchJson = await emptySearchRes.json()
+    expect(emptySearchJson.data).toHaveLength(8)
+  })
+
   it("POST /api/members adds member to in-memory store and updates analytics", async () => {
     const createRes = await createMemberRoute(
       createJsonRequest("http://localhost/api/members", "POST", {
