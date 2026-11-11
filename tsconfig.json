@@ -41,7 +41,9 @@
       "@user/*": ["./features/user/*"],
       "@user": ["./features/user"],
       "@department/*": ["./features/department/*"],
-      "@department": ["./features/department"]
+      "@department": ["./features/department"],
+      "@employment-type/*": ["./features/employment-type/*"],
+      "@employment-type": ["./features/employment-type"]
     }
   },
   "include": [
