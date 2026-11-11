@@ -1,4 +1,10 @@
-import type { Department, EmploymentType, Member, UserProfile } from "./types"
+import type {
+  Department,
+  EmploymentType,
+  Member,
+  MemberAnalytics,
+  UserProfile,
+} from "./types"
 
 export const SEED_CURRENT_USER: UserProfile = {
   id: "usr-001",
@@ -98,3 +104,13 @@ export const SEED_MEMBERS: Member[] = [
 
 export const SEED_PENDING_INVITES = 3
 
+export const SEED_MEMBER_ANALYTICS: Record<string, MemberAnalytics> = {
+  "mem-001": { totalRepository: 42, totalDeployment: 1489 },
+  "mem-002": { totalRepository: 18, totalDeployment: 312 },
+  "mem-003": { totalRepository: 57, totalDeployment: 2140 },
+  "mem-004": { totalRepository: 11, totalDeployment: 94 },
+  "mem-005": { totalRepository: 26, totalDeployment: 645 },
+  "mem-006": { totalRepository: 8, totalDeployment: 120 },
+  "mem-007": { totalRepository: 15, totalDeployment: 430 },
+  "mem-008": { totalRepository: 14, totalDeployment: 185 },
+}

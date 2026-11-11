@@ -147,26 +147,32 @@ response:
         ]
     }
 
-- Create [GET] /members/analytics
+- Create [GET] /analytics
 response:
     {
         status: boolean,
         message: string,
         data: [
             {
-                key: "total",
+                key: "totalMembers",
                 label: "Total Members",
                 value: number,
                 trend: "+xx this month"
             },
             {
-                key: "active",
+                key: "activeMembers",
                 label: "Active Now",
                 value: number,
                 trend: "xx% live activity"
             },
             {
-                key: "pending",
+                key: "departments",
+                label: "Departments",
+                value: number,
+                trend: "xx active units"
+            },
+            {
+                key: "pendingInvites",
                 label: "Pending Invites",
                 value: number,
                 trend: "xx expiring soon"
@@ -174,17 +180,13 @@ response:
         ]
     }
 
-- Create [GET] /departments/analytics
+- Create [GET] /members/:id/analytics
 response:
     {
         status: boolean,
         message: string,
-        data: [
-            {
-                key: "total",
-                label: "Departments",
-                value: number,
-                trend: "xx active units"
-            }
-        ]
+        data: {
+            totalRepository: number,
+            totalDeployment: number
+        }
     }

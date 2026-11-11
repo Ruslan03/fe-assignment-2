@@ -2,6 +2,7 @@ import {
   SEED_CURRENT_USER,
   SEED_DEPARTMENTS,
   SEED_EMPLOYMENT_TYPES,
+  SEED_MEMBER_ANALYTICS,
   SEED_MEMBERS,
   SEED_PENDING_INVITES,
 } from "./seed"
@@ -11,6 +12,7 @@ import type {
   Department,
   EmploymentType,
   Member,
+  MemberAnalytics,
   MemberStatus,
   UpdateMemberPayload,
   UserProfile,
@@ -19,6 +21,7 @@ import type {
 interface MockApiState {
   currentUser: UserProfile
   members: Member[]
+  memberAnalytics: Record<string, MemberAnalytics>
   departments: Department[]
   employmentTypes: EmploymentType[]
   pendingInvites: number
@@ -40,6 +43,12 @@ function createInitialState(): MockApiState {
   return {
     currentUser: { ...SEED_CURRENT_USER },
     members: SEED_MEMBERS.map((member) => ({ ...member })),
+    memberAnalytics: Object.fromEntries(
+      Object.entries(SEED_MEMBER_ANALYTICS).map(([id, stats]) => [
+        id,
+        { ...stats },
+      ])
+    ),
     departments: SEED_DEPARTMENTS.map((dept) => ({ ...dept })),
     employmentTypes: SEED_EMPLOYMENT_TYPES.map((type) => ({ ...type })),
     pendingInvites: SEED_PENDING_INVITES,
@@ -117,10 +126,17 @@ export function createMember(payload: CreateMemberPayload): Member[] {
   }
 
   state.members = [newMember, ...state.members]
+  state.memberAnalytics[newMember.id] = {
+    totalRepository: 0,
+    totalDeployment: 0,
+  }
   return state.members.map((member) => ({ ...member }))
 }
 
-export function updateMember(id: string, payload: UpdateMemberPayload): Member | null {
+export function updateMember(
+  id: string,
+  payload: UpdateMemberPayload
+): Member | null {
   const state = getState()
   const index = state.members.findIndex((member) => member.id === id)
   if (index === -1) return null
@@ -132,7 +148,9 @@ export function updateMember(id: string, payload: UpdateMemberPayload): Member |
     email: payload.email !== undefined ? payload.email.trim() : existing.email,
     role: payload.role !== undefined ? payload.role.trim() : existing.role,
     department:
-      payload.department !== undefined ? payload.department.trim() : existing.department,
+      payload.department !== undefined
+        ? payload.department.trim()
+        : existing.department,
     status: payload.status !== undefined ? payload.status : existing.status,
     joinDate:
       payload.joinDate !== undefined && payload.joinDate.trim() !== ""
@@ -150,6 +168,7 @@ export function deleteMember(id: string): Member | null {
   if (index === -1) return null
 
   const [deleted] = state.members.splice(index, 1)
+  delete state.memberAnalytics[id]
   return { ...deleted }
 }
 
@@ -161,6 +180,9 @@ export function bulkDeleteMembers(ids: string[]): {
   const idSet = new Set(ids)
   const beforeCount = state.members.length
   state.members = state.members.filter((member) => !idSet.has(member.id))
+  for (const id of idSet) {
+    delete state.memberAnalytics[id]
+  }
   const deletedCount = beforeCount - state.members.length
 
   return {
@@ -177,7 +199,7 @@ export function getEmploymentTypes(): EmploymentType[] {
   return getState().employmentTypes.map((type) => ({ ...type }))
 }
 
-export function getMembersAnalytics(): AnalyticsItem[] {
+export function getAnalytics(): AnalyticsItem[] {
   const state = getState()
   const total = state.members.length
   const activeCount = state.members.filter((m) => m.status === "active").length
@@ -196,32 +218,9 @@ export function getMembersAnalytics(): AnalyticsItem[] {
   }).length
 
   const activeRate = total > 0 ? Math.round((activeCount / total) * 100) : 0
-  const expiringSoon = state.pendingInvites > 0 ? Math.min(2, state.pendingInvites) : 0
+  const expiringSoon =
+    state.pendingInvites > 0 ? Math.min(2, state.pendingInvites) : 0
 
-  return [
-    {
-      key: "total",
-      label: "Total Members",
-      value: total,
-      trend: `+${joinedThisMonth} this month`,
-    },
-    {
-      key: "active",
-      label: "Active Now",
-      value: activeCount,
-      trend: `${activeRate}% live activity`,
-    },
-    {
-      key: "pending",
-      label: "Pending Invites",
-      value: state.pendingInvites,
-      trend: `${expiringSoon} expiring soon`,
-    },
-  ]
-}
-
-export function getDepartmentsAnalytics(): AnalyticsItem[] {
-  const state = getState()
   const totalDepartments = state.departments.length
   const activeDepartmentNames = new Set(
     state.members
@@ -234,11 +233,40 @@ export function getDepartmentsAnalytics(): AnalyticsItem[] {
 
   return [
     {
-      key: "total",
+      key: "totalMembers",
+      label: "Total Members",
+      value: total,
+      trend: `+${joinedThisMonth} this month`,
+    },
+    {
+      key: "activeMembers",
+      label: "Active Now",
+      value: activeCount,
+      trend: `${activeRate}% live activity`,
+    },
+    {
+      key: "departments",
       label: "Departments",
       value: totalDepartments,
       trend: `${activeUnits} active units`,
     },
+    {
+      key: "pendingInvites",
+      label: "Pending Invites",
+      value: state.pendingInvites,
+      trend: `${expiringSoon} expiring soon`,
+    },
   ]
 }
 
+export function getMemberAnalytics(id: string): MemberAnalytics | null {
+  const state = getState()
+  const exists = state.members.some((member) => member.id === id)
+  if (!exists) return null
+
+  const stats = state.memberAnalytics[id] ?? {
+    totalRepository: 0,
+    totalDeployment: 0,
+  }
+  return { ...stats }
+}

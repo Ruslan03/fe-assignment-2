@@ -55,9 +55,13 @@ export interface AnalyticsItem {
   trend: string
 }
 
+export interface MemberAnalytics {
+  totalRepository: number
+  totalDeployment: number
+}
+
 export interface ApiResponse<T> {
   status: boolean
   message: string
   data: T
 }
-
