@@ -1,8 +1,8 @@
 import { describe, expect, it, vi } from "vitest"
 
-import type { MemberType } from "../../domain/member.entity"
+import type { CreateMemberPayload, MemberType } from "../../domain/member.entity"
 import type { IMemberRepository } from "../member.repository.interface"
-import { getAllMembersUseCase } from "../member.usecase"
+import { createMemberUseCase, getAllMembersUseCase } from "../member.usecase"
 
 const MOCK_MEMBERS: MemberType[] = [
   {
@@ -16,10 +16,20 @@ const MOCK_MEMBERS: MemberType[] = [
   },
 ]
 
-describe("getAllMembersUseCase", () => {
-  it("delegates to repository getAllMembers with optional search", async () => {
+const CREATE_PAYLOAD: CreateMemberPayload = {
+  name: "Hana Kusuma",
+  email: "hana.kusuma@company.com",
+  role: "DevOps Engineer",
+  department: "Engineering",
+  status: "active",
+  joinDate: "2026-11-10T09:00:00.000Z",
+}
+
+describe("member usecases", () => {
+  it("delegates getAllMembersUseCase to repository getAllMembers", async () => {
     const getAllMembers = vi.fn().mockResolvedValue(MOCK_MEMBERS)
-    const repo: IMemberRepository = { getAllMembers }
+    const createMember = vi.fn()
+    const repo: IMemberRepository = { getAllMembers, createMember }
 
     const allResult = await getAllMembersUseCase(repo)
     expect(getAllMembers).toHaveBeenCalledWith(undefined)
@@ -29,5 +39,14 @@ describe("getAllMembersUseCase", () => {
     expect(getAllMembers).toHaveBeenCalledWith("ruslan")
     expect(searchResult).toEqual(MOCK_MEMBERS)
   })
-})
 
+  it("delegates createMemberUseCase to repository createMember", async () => {
+    const getAllMembers = vi.fn()
+    const createMember = vi.fn().mockResolvedValue(MOCK_MEMBERS)
+    const repo: IMemberRepository = { getAllMembers, createMember }
+
+    const result = await createMemberUseCase(repo, CREATE_PAYLOAD)
+    expect(createMember).toHaveBeenCalledWith(CREATE_PAYLOAD)
+    expect(result).toEqual(MOCK_MEMBERS)
+  })
+})

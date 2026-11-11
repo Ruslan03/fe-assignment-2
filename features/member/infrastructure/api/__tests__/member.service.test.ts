@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
-import type { MemberType } from "../../../domain/member.entity"
+import type { CreateMemberPayload, MemberType } from "../../../domain/member.entity"
 import { MemberService } from "../member.service"
 
 const MOCK_MEMBERS: MemberType[] = [
@@ -14,6 +14,14 @@ const MOCK_MEMBERS: MemberType[] = [
     joinDate: "2025-03-10T09:00:00.000Z",
   },
 ]
+
+const CREATE_PAYLOAD: CreateMemberPayload = {
+  name: "Hana Kusuma",
+  email: "hana.kusuma@company.com",
+  role: "DevOps Engineer",
+  department: "Engineering",
+  status: "active",
+}
 
 describe("MemberService", () => {
   beforeEach(() => {
@@ -57,5 +65,37 @@ describe("MemberService", () => {
     )
     expect(result).toEqual(MOCK_MEMBERS)
   })
-})
 
+  it("posts payload to /members and throws when response is not ok", async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce({
+        ok: true,
+        json: vi.fn().mockResolvedValue({ status: true, data: MOCK_MEMBERS }),
+      })
+      .mockResolvedValueOnce({
+        ok: false,
+        json: vi.fn().mockResolvedValue({
+          status: false,
+          message: "Fields name, email, role, and department are required",
+        }),
+      })
+    vi.stubGlobal("fetch", fetchMock)
+
+    const service = new MemberService()
+    const result = await service.createMember(CREATE_PAYLOAD)
+
+    expect(fetchMock).toHaveBeenCalledWith("http://localhost:3000/api/members", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(CREATE_PAYLOAD),
+    })
+    expect(result).toEqual(MOCK_MEMBERS)
+
+    await expect(service.createMember(CREATE_PAYLOAD)).rejects.toThrow(
+      "Fields name, email, role, and department are required"
+    )
+  })
+})

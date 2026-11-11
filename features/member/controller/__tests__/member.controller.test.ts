@@ -1,8 +1,11 @@
 import { afterEach, describe, expect, it, vi } from "vitest"
 
-import type { MemberType } from "../../domain/member.entity"
+import type { CreateMemberPayload, MemberType } from "../../domain/member.entity"
 import { MemberService } from "../../infrastructure/api/member.service"
-import { getAllMemberController } from "../member.controller"
+import {
+  createMemberController,
+  getAllMemberController,
+} from "../member.controller"
 
 const MOCK_MEMBERS: MemberType[] = [
   {
@@ -15,6 +18,14 @@ const MOCK_MEMBERS: MemberType[] = [
     joinDate: "2025-03-10T09:00:00.000Z",
   },
 ]
+
+const CREATE_PAYLOAD: CreateMemberPayload = {
+  name: "Hana Kusuma",
+  email: "hana.kusuma@company.com",
+  role: "DevOps Engineer",
+  department: "Engineering",
+  status: "active",
+}
 
 describe("member.controller", () => {
   afterEach(() => {
@@ -34,5 +45,14 @@ describe("member.controller", () => {
     expect(spy).toHaveBeenCalledWith("engineering")
     expect(filteredMembers).toEqual(MOCK_MEMBERS)
   })
-})
 
+  it("creates member through MemberService and usecase", async () => {
+    const spy = vi
+      .spyOn(MemberService.prototype, "createMember")
+      .mockResolvedValue(MOCK_MEMBERS)
+
+    const members = await createMemberController(CREATE_PAYLOAD)
+    expect(spy).toHaveBeenCalledWith(CREATE_PAYLOAD)
+    expect(members).toEqual(MOCK_MEMBERS)
+  })
+})

@@ -1,23 +1,78 @@
-import { Text } from "../atoms/text";
+import type * as React from "react"
+import Link from "next/link"
+import { ArrowLeft } from "lucide-react"
+
+import { Button } from "@atoms/button"
+import { Text } from "@atoms/text"
 
 export interface HeaderProps {
-    title: string
-    subtitle?: string
-    rightContent?: React.ReactNode
+  title: string
+  subtitle?: string
+  rightContent?: React.ReactNode
+  backHref?: string
+  onBack?: () => void
+  backLabel?: string
 }
 
-export function Header({ title, subtitle, rightContent }: HeaderProps) {
-
+function renderBackButton({
+  backHref,
+  onBack,
+  backLabel = "Go back",
+}: Pick<HeaderProps, "backHref" | "onBack" | "backLabel">) {
+  if (backHref) {
     return (
-        <div className="py-8 flex justify-between items-center">
-            <div className="flex flex-col gap-2">
-                <Text as="h1" variant={'h1'} className="font-medium">{title}</Text>
-                <Text as="h2" variant={'lead'}>{subtitle}</Text>
-            </div>
+      <Button variant="outline" size="icon" asChild aria-label={backLabel}>
+        <Link href={backHref}>
+          <ArrowLeft />
+        </Link>
+      </Button>
+    )
+  }
 
-            <div>
-                {rightContent}
-            </div>
+  if (onBack) {
+    return (
+      <Button
+        type="button"
+        variant="outline"
+        size="icon"
+        onClick={onBack}
+        aria-label={backLabel}
+      >
+        <ArrowLeft />
+      </Button>
+    )
+  }
+
+  return null
+}
+
+export function Header({
+  title,
+  subtitle,
+  rightContent,
+  backHref,
+  onBack,
+  backLabel,
+}: HeaderProps) {
+  const backButton = renderBackButton({ backHref, onBack, backLabel })
+
+  return (
+    <div className="flex items-center justify-between gap-4 py-8">
+      <div className="flex items-center gap-4">
+        {backButton}
+        <div className="flex flex-col gap-2">
+          <Text as="h1" variant="h1" className="font-medium">
+            {title}
+          </Text>
+          {subtitle && (
+            <Text as="h2" variant="lead">
+              {subtitle}
+            </Text>
+          )}
         </div>
-    );
+      </div>
+
+      {rightContent && <div>{rightContent}</div>}
+    </div>
+  )
 }
