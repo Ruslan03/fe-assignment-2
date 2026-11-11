@@ -4,9 +4,9 @@ import { act, fireEvent, render, screen } from "@testing-library/react"
 import { store } from "@/shared/presentation/store"
 import { ReduxProvider } from "@/shared/presentation/store/provider"
 
-import * as memberController from "../../../controller/member.controller"
-import type { MemberType } from "../../../domain/member.entity"
-import { fetchMembers, setSearch } from "../../store"
+import * as memberController from "../../../../controller/member.controller"
+import type { MemberType } from "../../../../domain/member.entity"
+import { fetchMembers, setSearch } from "../../../store"
 import { MemberList } from "../member-list"
 
 const MOCK_MEMBERS: MemberType[] = [

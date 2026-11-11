@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest"
 import { render, screen } from "@testing-library/react"
 
-vi.mock("@/features/user/presentation/components/user-info", () => ({
+vi.mock("@user/presentation/components/user-info", () => ({
   default: () => <div data-testid="mock-user-info">User Info</div>,
 }))
 

@@ -1,4 +1,4 @@
-import UserInfo from "@/features/user/presentation/components/user-info";
+import UserInfo from "@user/presentation/components/user-info";
 import { MainNavbar } from "../organisms/main-navbar";
 
 export interface MainLayoutProps {

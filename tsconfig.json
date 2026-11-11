@@ -33,7 +33,13 @@
       "@lib/*": ["./shared/lib/*"],
       "@lib": ["./shared/lib"],
       "@hooks/*": ["./shared/hooks/*"],
-      "@hooks": ["./shared/hooks"]
+      "@hooks": ["./shared/hooks"],
+      "@features/*": ["./features/*"],
+      "@features": ["./features"],
+      "@member/*": ["./features/member/*"],
+      "@member": ["./features/member"],
+      "@user/*": ["./features/user/*"],
+      "@user": ["./features/user"]
     }
   },
   "include": [

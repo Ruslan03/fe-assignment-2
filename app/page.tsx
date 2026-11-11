@@ -1,7 +1,5 @@
-import { HomePage } from "@/shared/presentation/components/pages/home";
+import { DashboardMemberPage } from "@member/presentation/components/pages/dashboard-member"
 
 export default function Home() {
-  return (
-    <HomePage />
-  )
+  return <DashboardMemberPage />
 }

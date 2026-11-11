@@ -1,17 +1,18 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import { act, render, screen } from "@testing-library/react"
 
-vi.mock("@/features/user/presentation/components/user-info", () => ({
+vi.mock("@user/presentation/components/user-info", () => ({
   default: () => <div data-testid="mock-user-info">User Info</div>,
 }))
 
-import * as memberController from "@/features/member/controller/member.controller"
-import { fetchMembers, setSearch } from "@/features/member/presentation/store"
+import * as memberController from "@member/controller/member.controller"
+import { fetchMembers, setSearch } from "@member/presentation/store"
 import { store } from "@/shared/presentation/store"
 import { ReduxProvider } from "@/shared/presentation/store/provider"
-import { HomePage } from "@pages/home"
 
-describe("HomePage", () => {
+import { DashboardMemberPage } from "../dashboard-member"
+
+describe("DashboardMemberPage", () => {
   beforeEach(() => {
     store.dispatch(setSearch(""))
     store.dispatch(fetchMembers.fulfilled([], "", undefined))
@@ -37,7 +38,7 @@ describe("HomePage", () => {
     await act(async () => {
       render(
         <ReduxProvider>
-          <HomePage />
+          <DashboardMemberPage />
         </ReduxProvider>
       )
     })
@@ -53,4 +54,3 @@ describe("HomePage", () => {
     expect(screen.getByText("Ruslan Wanandi")).toBeInTheDocument()
   })
 })
-

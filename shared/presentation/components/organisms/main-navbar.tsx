@@ -1,4 +1,4 @@
-import UserInfo from "@/features/user/presentation/components/user-info";
+import UserInfo from "@user/presentation/components/user-info";
 
 export function MainNavbar() {
 

@@ -13,8 +13,8 @@ import { Text } from "@atoms/text"
 import { StatusBadge } from "@molecules/status-badge"
 import { DataTable, type DataTableColumn } from "@organisms/data-table"
 
-import type { MemberType } from "../../domain/member.entity"
-import { fetchMembers, selectMemberState, setSearch } from "../store"
+import type { MemberType } from "../../../domain/member.entity"
+import { fetchMembers, selectMemberState, setSearch } from "../../store"
 
 const MEMBER_COLUMNS: DataTableColumn<MemberType>[] = [
   {
