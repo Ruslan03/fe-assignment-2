@@ -16,13 +16,17 @@ response:
         status: boolean,
         message: string,
         data: [
-            id: string,
-            name: string,
-            email: string,
-            role: string,
-            department: string,
-            status: string (active/inactive)
-            joinDate: datetime
+            {
+                id: string,
+                name: string,
+                email: string,
+                role: string,
+                department: string,
+                employmentType?: string,
+                bio?: string,
+                status: string (active/inactive),
+                joinDate: datetime
+            }
         ]
     }
 
@@ -38,7 +42,9 @@ response:
                 email: string,
                 role: string,
                 department: string,
-                status: string (active/inactive)
+                employmentType?: string,
+                bio?: string,
+                status: string (active/inactive),
                 joinDate: datetime
             },
             ....
@@ -51,8 +57,10 @@ payload:
         email: string,
         role: string,
         department: string,
-        status: string (active/inactive)
-        joinDate: datetime
+        employmentType?: string,
+        bio?: string,
+        status: string (active/inactive),
+        joinDate?: datetime
     }
 
 - Create [PUT] /members/:id
@@ -61,22 +69,27 @@ response:
         status: boolean,
         message: string,
         data: {
+            id: string,
             name: string,
             email: string,
             role: string,
             department: string,
-            status: string (active/inactive)
+            employmentType?: string,
+            bio?: string,
+            status: string (active/inactive),
             joinDate: datetime
         }
     }
 
 payload:
     {
-        name: string,
-        email: string,
-        role: string,
-        department: string,
-        status: string (active/inactive)
+        name?: string,
+        email?: string,
+        role?: string,
+        department?: string,
+        employmentType?: string,
+        bio?: string,
+        status?: string (active/inactive),
         joinDate?: datetime
     }
 

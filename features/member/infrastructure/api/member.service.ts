@@ -1,33 +1,71 @@
-import { CreateMemberPayload, MemberType } from "../../domain/member.entity"
-import { IMemberRepository } from "../../usecase/member.repository.interface"
+import type {
+  CreateMemberPayload,
+  MemberType,
+  UpdateMemberPayload,
+} from "../../domain/member.entity"
+import type { IMemberRepository } from "../../usecase/member.repository.interface"
 
 export class MemberService implements IMemberRepository {
-    async getAllMembers(search?: string): Promise<MemberType[]> {
-        const trimmedSearch = search?.trim()
-        const url = `${process.env.NEXT_PUBLIC_BASE_API_URL}/members${trimmedSearch ? `?search=${encodeURIComponent(trimmedSearch)}` : ""}`
-        const res = await fetch(url)
+  async getAllMembers(search?: string): Promise<MemberType[]> {
+    const trimmedSearch = search?.trim()
+    const url = `${process.env.NEXT_PUBLIC_BASE_API_URL}/members${trimmedSearch ? `?search=${encodeURIComponent(trimmedSearch)}` : ""}`
+    const res = await fetch(url)
 
-        const data = await res.json()
+    const data = await res.json()
 
-        return data?.data as MemberType[]
+    return data?.data as MemberType[]
+  }
+
+  async getMemberById(id: string): Promise<MemberType> {
+    const url = `${process.env.NEXT_PUBLIC_BASE_API_URL}/members/${encodeURIComponent(id)}`
+    const res = await fetch(url)
+    const data = await res.json()
+
+    if (!res.ok) {
+      throw new Error(data?.message ?? "Failed to get member")
     }
 
-    async createMember(payload: CreateMemberPayload): Promise<MemberType[]> {
-        const url = `${process.env.NEXT_PUBLIC_BASE_API_URL}/members`
-        const res = await fetch(url, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify(payload),
-        })
+    return data?.data as MemberType
+  }
 
-        const data = await res.json()
+  async createMember(payload: CreateMemberPayload): Promise<MemberType[]> {
+    const url = `${process.env.NEXT_PUBLIC_BASE_API_URL}/members`
+    const res = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    })
 
-        if (!res.ok) {
-            throw new Error(data?.message ?? "Failed to create member")
-        }
+    const data = await res.json()
 
-        return data?.data as MemberType[]
+    if (!res.ok) {
+      throw new Error(data?.message ?? "Failed to create member")
     }
+
+    return data?.data as MemberType[]
+  }
+
+  async updateMember(
+    id: string,
+    payload: UpdateMemberPayload
+  ): Promise<MemberType> {
+    const url = `${process.env.NEXT_PUBLIC_BASE_API_URL}/members/${encodeURIComponent(id)}`
+    const res = await fetch(url, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    })
+
+    const data = await res.json()
+
+    if (!res.ok) {
+      throw new Error(data?.message ?? "Failed to update member")
+    }
+
+    return data?.data as MemberType
+  }
 }

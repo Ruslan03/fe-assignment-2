@@ -47,7 +47,10 @@ export async function POST(request: Request): Promise<Response> {
       typeof body.joinDate !== "string" ||
       Number.isNaN(new Date(body.joinDate).getTime())
     ) {
-      return errorResponse("Field joinDate must be a valid datetime string", 400)
+      return errorResponse(
+        "Field joinDate must be a valid datetime string",
+        400
+      )
     }
   }
 
@@ -56,10 +59,12 @@ export async function POST(request: Request): Promise<Response> {
     email: body.email,
     role: body.role,
     department: body.department,
+    employmentType:
+      typeof body.employmentType === "string" ? body.employmentType : undefined,
+    bio: typeof body.bio === "string" ? body.bio : undefined,
     status: body.status,
     joinDate: body.joinDate,
   })
 
   return okResponse(members, "Success create member", 201)
 }
-

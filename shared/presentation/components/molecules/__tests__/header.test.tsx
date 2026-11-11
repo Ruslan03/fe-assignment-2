@@ -14,9 +14,10 @@ describe("Header", () => {
       />
     )
 
-    expect(
-      screen.getByRole("link", { name: "Go back" })
-    ).toHaveAttribute("href", "/")
+    expect(screen.getByRole("link", { name: "Go back" })).toHaveAttribute(
+      "href",
+      "/"
+    )
     expect(
       screen.getByRole("heading", { level: 1, name: "Members Directory" })
     ).toBeInTheDocument()
@@ -24,6 +25,33 @@ describe("Header", () => {
       screen.getByRole("heading", { level: 2, name: "Manage team members" })
     ).toBeInTheDocument()
     expect(screen.getByRole("button", { name: "Action" })).toBeInTheDocument()
+  })
+
+  it("supports ReactNode title and subtitle content", () => {
+    render(
+      <Header
+        title={
+          <>
+            <span>Sarah Jenkins</span>
+            <span>Active</span>
+          </>
+        }
+        subtitle={
+          <>
+            <span>ID: #MEM-2048</span>
+            <span>Joined March 2022</span>
+          </>
+        }
+      />
+    )
+
+    expect(
+      screen.getByRole("heading", { level: 1, name: /Sarah Jenkins/i })
+    ).toBeInTheDocument()
+    expect(screen.getByText("Active")).toBeInTheDocument()
+    expect(screen.queryByRole("heading", { level: 2 })).not.toBeInTheDocument()
+    expect(screen.getByText("ID: #MEM-2048")).toBeInTheDocument()
+    expect(screen.getByText("Joined March 2022")).toBeInTheDocument()
   })
 
   it("supports onBack callback button", () => {

@@ -1,6 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
-import type { CreateMemberPayload, MemberType } from "../../../domain/member.entity"
+import type {
+  CreateMemberPayload,
+  MemberType,
+} from "../../../domain/member.entity"
 import { MemberService } from "../member.service"
 
 const MOCK_MEMBERS: MemberType[] = [
@@ -85,17 +88,89 @@ describe("MemberService", () => {
     const service = new MemberService()
     const result = await service.createMember(CREATE_PAYLOAD)
 
-    expect(fetchMock).toHaveBeenCalledWith("http://localhost:3000/api/members", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(CREATE_PAYLOAD),
-    })
+    expect(fetchMock).toHaveBeenCalledWith(
+      "http://localhost:3000/api/members",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(CREATE_PAYLOAD),
+      }
+    )
     expect(result).toEqual(MOCK_MEMBERS)
 
     await expect(service.createMember(CREATE_PAYLOAD)).rejects.toThrow(
       "Fields name, email, role, and department are required"
+    )
+  })
+
+  it("fetches a single member by id and throws when response is not ok", async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce({
+        ok: true,
+        json: vi
+          .fn()
+          .mockResolvedValue({ status: true, data: MOCK_MEMBERS[0] }),
+      })
+      .mockResolvedValueOnce({
+        ok: false,
+        json: vi.fn().mockResolvedValue({
+          status: false,
+          message: "Member not found",
+        }),
+      })
+    vi.stubGlobal("fetch", fetchMock)
+
+    const service = new MemberService()
+    const result = await service.getMemberById("mem-001")
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      "http://localhost:3000/api/members/mem-001"
+    )
+    expect(result).toEqual(MOCK_MEMBERS[0])
+
+    await expect(service.getMemberById("missing")).rejects.toThrow(
+      "Member not found"
+    )
+  })
+
+  it("puts updated payload to /members/:id and throws when response is not ok", async () => {
+    const updatedMember = { ...MOCK_MEMBERS[0], role: "Staff Engineer" }
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce({
+        ok: true,
+        json: vi.fn().mockResolvedValue({ status: true, data: updatedMember }),
+      })
+      .mockResolvedValueOnce({
+        ok: false,
+        json: vi.fn().mockResolvedValue({
+          status: false,
+          message: "Member not found",
+        }),
+      })
+    vi.stubGlobal("fetch", fetchMock)
+
+    const service = new MemberService()
+    const payload = { role: "Staff Engineer" }
+    const result = await service.updateMember("mem-001", payload)
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      "http://localhost:3000/api/members/mem-001",
+      {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      }
+    )
+    expect(result).toEqual(updatedMember)
+
+    await expect(service.updateMember("missing", payload)).rejects.toThrow(
+      "Member not found"
     )
   })
 })

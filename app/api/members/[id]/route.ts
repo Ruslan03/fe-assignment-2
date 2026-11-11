@@ -14,10 +14,15 @@ interface RouteContext {
 }
 
 function isInvalidOptionalString(value: unknown): boolean {
-  return value !== undefined && (typeof value !== "string" || value.trim() === "")
+  return (
+    value !== undefined && (typeof value !== "string" || value.trim() === "")
+  )
 }
 
-export async function GET(_request: Request, context: RouteContext): Promise<Response> {
+export async function GET(
+  _request: Request,
+  context: RouteContext
+): Promise<Response> {
   const { id } = await context.params
   const member = getMemberById(id)
 
@@ -28,7 +33,10 @@ export async function GET(_request: Request, context: RouteContext): Promise<Res
   return okResponse(member, "Success get member")
 }
 
-export async function PUT(request: Request, context: RouteContext): Promise<Response> {
+export async function PUT(
+  request: Request,
+  context: RouteContext
+): Promise<Response> {
   const { id } = await context.params
   const body = await parseJsonBody<UpdateMemberPayload>(request)
 
@@ -48,6 +56,14 @@ export async function PUT(request: Request, context: RouteContext): Promise<Resp
     )
   }
 
+  if (
+    (body.employmentType !== undefined &&
+      typeof body.employmentType !== "string") ||
+    (body.bio !== undefined && typeof body.bio !== "string")
+  ) {
+    return errorResponse("Fields employmentType and bio must be strings", 400)
+  }
+
   if (body.status !== undefined && !isValidMemberStatus(body.status)) {
     return errorResponse('Field status must be "active" or "inactive"', 400)
   }
@@ -57,7 +73,10 @@ export async function PUT(request: Request, context: RouteContext): Promise<Resp
       typeof body.joinDate !== "string" ||
       Number.isNaN(new Date(body.joinDate).getTime())
     ) {
-      return errorResponse("Field joinDate must be a valid datetime string", 400)
+      return errorResponse(
+        "Field joinDate must be a valid datetime string",
+        400
+      )
     }
   }
 
@@ -82,4 +101,3 @@ export async function DELETE(
 
   return okResponse(deleted, "Success delete member")
 }
-

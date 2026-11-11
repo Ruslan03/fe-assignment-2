@@ -1,4 +1,4 @@
-'use client'
+"use client"
 
 import { useEffect, useState } from "react"
 import Link from "next/link"
@@ -11,13 +11,17 @@ import {
   Mail,
   Save,
   ToggleLeft,
+  Trash2,
 } from "lucide-react"
 import { Controller, useForm } from "react-hook-form"
 import { z } from "zod"
 
 import { DepartmentSelect } from "@department/presentation/components/ui/department-select"
 import { EmploymentTypeSelect } from "@employment-type/presentation/components/ui/employment-type-select"
-import { useAppDispatch, useAppSelector } from "@/shared/presentation/store/hooks"
+import {
+  useAppDispatch,
+  useAppSelector,
+} from "@/shared/presentation/store/hooks"
 import { Button } from "@atoms/button"
 import { Card, CardFooter } from "@atoms/card"
 import { Text } from "@atoms/text"
@@ -27,9 +31,16 @@ import { SelectField } from "@molecules/select-field"
 import { TextField } from "@molecules/text-field"
 import { TextareaField } from "@molecules/textarea-field"
 
-import { clearCreateError, createMember, selectMemberState } from "../../store"
+import type { MemberType } from "../../../domain/member.entity"
+import {
+  clearCreateError,
+  clearUpdateError,
+  createMember,
+  selectMemberState,
+  updateMember,
+} from "../../store"
 
-const createMemberSchema = z.object({
+const memberSchema = z.object({
   name: z.string().trim().min(1, "Full name is required"),
   email: z
     .string()
@@ -43,9 +54,15 @@ const createMemberSchema = z.object({
   bio: z.string().optional(),
 })
 
-type CreateMemberFormValues = z.infer<typeof createMemberSchema>
+type MemberFormValues = z.infer<typeof memberSchema>
 
-interface CreatedMemberInfo {
+export interface MemberFormProps {
+  mode?: "create" | "edit"
+  initialData?: MemberType
+}
+
+interface SubmittedMemberInfo {
+  mode: "create" | "edit"
   id?: string
   name: string
 }
@@ -55,7 +72,7 @@ const STATUS_OPTIONS = [
   { label: "Inactive – Suspended Access", value: "inactive" },
 ]
 
-const DEFAULT_VALUES: CreateMemberFormValues = {
+const DEFAULT_VALUES: MemberFormValues = {
   name: "",
   email: "",
   status: "active",
@@ -65,12 +82,30 @@ const DEFAULT_VALUES: CreateMemberFormValues = {
   bio: "",
 }
 
-export function CreateMemberForm() {
+function toFormValues(member?: MemberType): MemberFormValues {
+  if (!member) return DEFAULT_VALUES
+
+  return {
+    name: member.name,
+    email: member.email,
+    status: member.status === "inactive" ? "inactive" : "active",
+    role: member.role,
+    department: member.department,
+    employmentType: member.employmentType ?? "",
+    bio: member.bio ?? "",
+  }
+}
+
+export function MemberForm({ mode = "create", initialData }: MemberFormProps) {
+  const isEdit = mode === "edit"
   const dispatch = useAppDispatch()
-  const { isCreating, createError } = useAppSelector(selectMemberState)
-  const [createdMember, setCreatedMember] = useState<CreatedMemberInfo | null>(
-    null
-  )
+  const { isCreating, createError, isUpdating, updateError } =
+    useAppSelector(selectMemberState)
+  const [submittedMember, setSubmittedMember] =
+    useState<SubmittedMemberInfo | null>(null)
+
+  const isSubmitting = isEdit ? isUpdating : isCreating
+  const submitError = isEdit ? updateError : createError
 
   const {
     register,
@@ -78,31 +113,56 @@ export function CreateMemberForm() {
     handleSubmit,
     reset,
     formState: { errors },
-  } = useForm<CreateMemberFormValues>({
-    resolver: zodResolver(createMemberSchema),
-    defaultValues: DEFAULT_VALUES,
+  } = useForm<MemberFormValues>({
+    resolver: zodResolver(memberSchema),
+    defaultValues: toFormValues(initialData),
   })
+
+  useEffect(() => {
+    if (!initialData) return
+    reset(toFormValues(initialData))
+  }, [initialData, reset])
 
   useEffect(() => {
     return () => {
       dispatch(clearCreateError())
+      dispatch(clearUpdateError())
     }
   }, [dispatch])
 
-  const onSubmit = async (values: CreateMemberFormValues) => {
-    const result = await dispatch(
-      createMember({
-        name: values.name,
-        email: values.email,
-        role: values.role,
-        department: values.department,
-        status: values.status,
-      })
-    )
+  const onSubmit = async (values: MemberFormValues) => {
+    const payload = {
+      name: values.name,
+      email: values.email,
+      role: values.role,
+      department: values.department,
+      employmentType: values.employmentType ?? "",
+      bio: values.bio ?? "",
+      status: values.status,
+    }
+
+    if (isEdit) {
+      if (!initialData) return
+      const result = await dispatch(
+        updateMember({ id: initialData.id, payload })
+      )
+
+      if (updateMember.fulfilled.match(result)) {
+        setSubmittedMember({
+          mode: "edit",
+          id: result.payload.id,
+          name: result.payload.name,
+        })
+      }
+      return
+    }
+
+    const result = await dispatch(createMember(payload))
 
     if (createMember.fulfilled.match(result)) {
       const latestMember = result.payload[0]
-      setCreatedMember({
+      setSubmittedMember({
+        mode: "create",
         id: latestMember?.id,
         name: latestMember?.name ?? values.name,
       })
@@ -116,7 +176,11 @@ export function CreateMemberForm() {
         <Card className="gap-0 py-0">
           <SectionCard
             title="General Information"
-            subtitle="Add personal records, contact credentials, and communication metadata."
+            subtitle={
+              isEdit
+                ? "Update personal records, contact credentials, and communication metadata."
+                : "Add personal records, contact credentials, and communication metadata."
+            }
             className="rounded-none border-b border-border shadow-none ring-0"
             contentClassName="grid grid-cols-1 gap-6 md:grid-cols-2"
           >
@@ -208,19 +272,33 @@ export function CreateMemberForm() {
             />
           </SectionCard>
 
-          <CardFooter className="justify-end gap-3 border-t border-border bg-muted/30 py-4">
-            {createError && (
+          <CardFooter className="flex-wrap items-center justify-end gap-3 border-t border-border bg-muted/30 py-4">
+            {isEdit && (
+              <Button
+                type="button"
+                variant="destructive"
+                className="mr-auto"
+                disabled={isSubmitting}
+              >
+                <Trash2 />
+                Delete Member
+              </Button>
+            )}
+
+            {submitError && (
               <Text
                 as="p"
                 variant="caption"
                 role="alert"
-                className="mr-auto text-destructive"
+                className={
+                  isEdit ? "text-destructive" : "mr-auto text-destructive"
+                }
               >
-                {createError}
+                {submitError}
               </Text>
             )}
 
-            {isCreating ? (
+            {isSubmitting ? (
               <Button type="button" variant="secondary" disabled>
                 Cancel
               </Button>
@@ -230,7 +308,7 @@ export function CreateMemberForm() {
               </Button>
             )}
 
-            <Button type="submit" disabled={isCreating}>
+            <Button type="submit" disabled={isSubmitting}>
               <Save />
               Save Changes
             </Button>
@@ -239,30 +317,35 @@ export function CreateMemberForm() {
       </form>
 
       <FeedbackDialog
-        open={Boolean(createdMember)}
+        open={Boolean(submittedMember)}
         onOpenChange={(open) => {
-          if (!open) setCreatedMember(null)
+          if (!open) setSubmittedMember(null)
         }}
         variant="success"
-        title="Member Added Successfully"
+        title={
+          submittedMember?.mode === "edit"
+            ? "Member Updated Successfully"
+            : "Member Added Successfully"
+        }
         description={
-          createdMember && (
+          submittedMember && (
             <>
               The profile information for{" "}
               <span className="font-semibold text-foreground">
-                {createdMember.name}
+                {submittedMember.name}
               </span>
-              {createdMember.id && (
+              {submittedMember.id && (
                 <>
                   {" "}
                   (
                   <span className="font-mono text-primary">
-                    #{createdMember.id.toUpperCase()}
+                    #{submittedMember.id.toUpperCase()}
                   </span>
                   )
                 </>
               )}{" "}
-              has been added and synchronized across all workspace services.
+              has been {submittedMember.mode === "edit" ? "updated" : "added"}{" "}
+              and synchronized across all workspace services.
             </>
           )
         }
@@ -272,12 +355,30 @@ export function CreateMemberForm() {
           </span>
         }
         footer={
-          <Button asChild>
-            <Link href="/">
-              <LayoutGrid />
-              Back to Dashboard
-            </Link>
-          </Button>
+          submittedMember?.mode === "edit" ? (
+            <>
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={() => setSubmittedMember(null)}
+              >
+                Continue Editing
+              </Button>
+              <Button asChild>
+                <Link href="/">
+                  <LayoutGrid />
+                  Back to Dashboard
+                </Link>
+              </Button>
+            </>
+          ) : (
+            <Button asChild>
+              <Link href="/">
+                <LayoutGrid />
+                Back to Dashboard
+              </Link>
+            </Button>
+          )
         }
       />
     </>

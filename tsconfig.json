@@ -43,7 +43,9 @@
       "@department/*": ["./features/department/*"],
       "@department": ["./features/department"],
       "@employment-type/*": ["./features/employment-type/*"],
-      "@employment-type": ["./features/employment-type"]
+      "@employment-type": ["./features/employment-type"],
+      "@analytics/*": ["./features/analytics/*"],
+      "@analytics": ["./features/analytics"]
     }
   },
   "include": [

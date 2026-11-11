@@ -62,7 +62,18 @@ describe("MemberList", () => {
     expect(screen.getByText("Ruslan Wanandi")).toBeInTheDocument()
     expect(screen.getByText("Dimas Nugroho")).toBeInTheDocument()
     expect(screen.getByText("Mar 10, 2025")).toBeInTheDocument()
-    expect(screen.getAllByRole("button", { name: "Edit" })).toHaveLength(2)
+    expect(
+      screen.getByRole("link", { name: /Ruslan Wanandi/i })
+    ).toHaveAttribute("href", "/members/mem-001")
+    expect(
+      screen.getByRole("link", { name: /Dimas Nugroho/i })
+    ).toHaveAttribute("href", "/members/mem-002")
+
+    const editLinks = screen.getAllByRole("link", { name: "Edit" })
+    expect(editLinks).toHaveLength(2)
+    expect(editLinks[0]).toHaveAttribute("href", "/members/mem-001")
+    expect(editLinks[1]).toHaveAttribute("href", "/members/mem-002")
+
     expect(
       screen.getByRole("button", { name: "Delete Ruslan Wanandi" })
     ).toBeInTheDocument()
@@ -144,4 +155,3 @@ describe("MemberList", () => {
     expect(screen.getByText("Failed to load")).toBeInTheDocument()
   })
 })
-

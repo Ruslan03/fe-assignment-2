@@ -1,10 +1,15 @@
 import { afterEach, describe, expect, it, vi } from "vitest"
 
-import type { CreateMemberPayload, MemberType } from "../../domain/member.entity"
+import type {
+  CreateMemberPayload,
+  MemberType,
+} from "../../domain/member.entity"
 import { MemberService } from "../../infrastructure/api/member.service"
 import {
   createMemberController,
   getAllMemberController,
+  getMemberByIdController,
+  updateMemberController,
 } from "../member.controller"
 
 const MOCK_MEMBERS: MemberType[] = [
@@ -54,5 +59,28 @@ describe("member.controller", () => {
     const members = await createMemberController(CREATE_PAYLOAD)
     expect(spy).toHaveBeenCalledWith(CREATE_PAYLOAD)
     expect(members).toEqual(MOCK_MEMBERS)
+  })
+
+  it("fetches single member by id through MemberService and usecase", async () => {
+    const spy = vi
+      .spyOn(MemberService.prototype, "getMemberById")
+      .mockResolvedValue(MOCK_MEMBERS[0])
+
+    const member = await getMemberByIdController("mem-001")
+    expect(spy).toHaveBeenCalledWith("mem-001")
+    expect(member).toEqual(MOCK_MEMBERS[0])
+  })
+
+  it("updates member through MemberService and usecase", async () => {
+    const updatedMember = { ...MOCK_MEMBERS[0], role: "Staff Engineer" }
+    const spy = vi
+      .spyOn(MemberService.prototype, "updateMember")
+      .mockResolvedValue(updatedMember)
+
+    const member = await updateMemberController("mem-001", {
+      role: "Staff Engineer",
+    })
+    expect(spy).toHaveBeenCalledWith("mem-001", { role: "Staff Engineer" })
+    expect(member).toEqual(updatedMember)
   })
 })

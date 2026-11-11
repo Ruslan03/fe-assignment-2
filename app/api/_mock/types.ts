@@ -12,6 +12,8 @@ export interface Member {
   email: string
   role: string
   department: string
+  employmentType?: string
+  bio?: string
   status: MemberStatus
   joinDate: string
 }
@@ -21,6 +23,8 @@ export interface CreateMemberPayload {
   email: string
   role: string
   department: string
+  employmentType?: string
+  bio?: string
   status: MemberStatus
   joinDate?: string
 }
@@ -30,6 +34,8 @@ export interface UpdateMemberPayload {
   email?: string
   role?: string
   department?: string
+  employmentType?: string
+  bio?: string
   status?: MemberStatus
   joinDate?: string
 }

@@ -121,6 +121,8 @@ export function createMember(payload: CreateMemberPayload): Member[] {
     email: payload.email.trim(),
     role: payload.role.trim(),
     department: payload.department.trim(),
+    employmentType: payload.employmentType?.trim() ?? "",
+    bio: payload.bio?.trim() ?? "",
     status: payload.status,
     joinDate: payload.joinDate?.trim() || new Date().toISOString(),
   }
@@ -151,6 +153,11 @@ export function updateMember(
       payload.department !== undefined
         ? payload.department.trim()
         : existing.department,
+    employmentType:
+      payload.employmentType !== undefined
+        ? payload.employmentType.trim()
+        : existing.employmentType,
+    bio: payload.bio !== undefined ? payload.bio.trim() : existing.bio,
     status: payload.status !== undefined ? payload.status : existing.status,
     joinDate:
       payload.joinDate !== undefined && payload.joinDate.trim() !== ""

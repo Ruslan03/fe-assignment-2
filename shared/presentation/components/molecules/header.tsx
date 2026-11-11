@@ -6,12 +6,37 @@ import { Button } from "@atoms/button"
 import { Text } from "@atoms/text"
 
 export interface HeaderProps {
-  title: string
-  subtitle?: string
+  title: React.ReactNode
+  subtitle?: React.ReactNode
   rightContent?: React.ReactNode
   backHref?: string
   onBack?: () => void
   backLabel?: string
+}
+
+function renderSubtitle(subtitle: React.ReactNode) {
+  if (
+    subtitle === undefined ||
+    subtitle === null ||
+    subtitle === false ||
+    subtitle === ""
+  ) {
+    return null
+  }
+
+  if (typeof subtitle === "string" || typeof subtitle === "number") {
+    return (
+      <Text as="h2" variant="lead">
+        {subtitle}
+      </Text>
+    )
+  }
+
+  return (
+    <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+      {subtitle}
+    </div>
+  )
 }
 
 function renderBackButton({
@@ -55,20 +80,21 @@ export function Header({
   backLabel,
 }: HeaderProps) {
   const backButton = renderBackButton({ backHref, onBack, backLabel })
+  const renderedSubtitle = renderSubtitle(subtitle)
 
   return (
     <div className="flex items-center justify-between gap-4 py-8">
       <div className="flex items-center gap-4">
         {backButton}
         <div className="flex flex-col gap-2">
-          <Text as="h1" variant="h1" className="font-medium">
+          <Text
+            as="h1"
+            variant="h1"
+            className="flex flex-wrap items-center gap-3 font-medium"
+          >
             {title}
           </Text>
-          {subtitle && (
-            <Text as="h2" variant="lead">
-              {subtitle}
-            </Text>
-          )}
+          {renderedSubtitle}
         </div>
       </div>
 
