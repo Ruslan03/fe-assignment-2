@@ -33,3 +33,7 @@ export interface UpdateMemberPayload {
   status?: MemberStatus
   joinDate?: string
 }
+
+export interface BulkDeletePayload {
+  ids: string[]
+}

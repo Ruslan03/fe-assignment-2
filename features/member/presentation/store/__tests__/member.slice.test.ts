@@ -8,6 +8,7 @@ import type {
   MemberType,
 } from "../../../domain/member.entity"
 import {
+  bulkDeleteMembers,
   createMember,
   deleteMember,
   exportMembersCsv,
@@ -16,6 +17,7 @@ import {
   updateMember,
 } from "../member.action"
 import {
+  clearBulkDeleteError,
   clearCreateError,
   clearDeleteError,
   clearExportError,
@@ -55,6 +57,7 @@ describe("memberSlice", () => {
     store.dispatch(clearCreateError())
     store.dispatch(clearUpdateError())
     store.dispatch(clearDeleteError())
+    store.dispatch(clearBulkDeleteError())
     store.dispatch(clearExportError())
     store.dispatch(clearSelectedMember())
     vi.restoreAllMocks()
@@ -79,6 +82,7 @@ describe("memberSlice", () => {
         createError: "Submit failed",
         updateError: "Update failed",
         deleteError: "Delete failed",
+        bulkDeleteError: "Bulk delete failed",
         exportError: "Export failed",
       },
       clearCreateError()
@@ -90,6 +94,9 @@ describe("memberSlice", () => {
 
     state = memberReducer(state, clearDeleteError())
     expect(state.deleteError).toBeNull()
+
+    state = memberReducer(state, clearBulkDeleteError())
+    expect(state.bulkDeleteError).toBeNull()
 
     state = memberReducer(state, clearExportError())
     expect(state.exportError).toBeNull()
@@ -287,6 +294,63 @@ describe("memberSlice", () => {
     expect(store.getState().member).toMatchObject({
       isExporting: false,
       exportError: "Export failed",
+    })
+  })
+
+  it("bulk deletes members via bulkDeleteMembers thunk while respecting active search filter", async () => {
+    const secondMember: MemberType = {
+      ...SAMPLE_MEMBERS[0],
+      id: "mem-002",
+      name: "Dimas Nugroho",
+      email: "dimas.nugroho@company.com",
+    }
+    const thirdMember: MemberType = {
+      ...SAMPLE_MEMBERS[0],
+      id: "mem-003",
+      name: "Siti Rahma",
+      email: "siti.rahma@company.com",
+    }
+
+    store.dispatch(fetchMembers.fulfilled(SAMPLE_MEMBERS, "", undefined))
+    store.dispatch(fetchMemberById.fulfilled(SAMPLE_MEMBERS[0], "", "mem-001"))
+
+    let resolveBulkDelete!: (members: MemberType[]) => void
+    const pendingPromise = new Promise<MemberType[]>((resolve) => {
+      resolveBulkDelete = resolve
+    })
+    const controllerSpy = vi
+      .spyOn(memberController, "bulkDeleteMembersController")
+      .mockReturnValueOnce(pendingPromise)
+
+    const dispatchPromise = store.dispatch(
+      bulkDeleteMembers({ ids: ["mem-001"] })
+    )
+    expect(store.getState().member?.isBulkDeleting).toBe(true)
+
+    resolveBulkDelete([secondMember, thirdMember])
+    await dispatchPromise
+
+    expect(controllerSpy).toHaveBeenCalledWith({ ids: ["mem-001"] })
+    expect(store.getState().member).toMatchObject({
+      isBulkDeleting: false,
+      bulkDeleteError: null,
+      items: [secondMember, thirdMember],
+      selectedMember: null,
+    })
+
+    store.dispatch(setSearch("dimas"))
+    store.dispatch(fetchMembers.fulfilled([secondMember], "", "dimas"))
+    controllerSpy.mockResolvedValueOnce([thirdMember])
+
+    await store.dispatch(bulkDeleteMembers({ ids: ["mem-002"] }))
+    expect(store.getState().member?.items).toEqual([])
+
+    controllerSpy.mockRejectedValueOnce(new Error("Bulk delete failed"))
+    await store.dispatch(bulkDeleteMembers({ ids: ["mem-003"] }))
+
+    expect(store.getState().member).toMatchObject({
+      isBulkDeleting: false,
+      bulkDeleteError: "Bulk delete failed",
     })
   })
 

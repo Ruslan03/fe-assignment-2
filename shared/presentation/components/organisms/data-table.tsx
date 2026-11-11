@@ -1,9 +1,10 @@
-'use client'
+"use client"
 
 import type * as React from "react"
 import { cn } from "cn"
 import { Search } from "lucide-react"
 
+import { Checkbox } from "@atoms/checkbox"
 import {
   Table,
   TableBody,
@@ -32,12 +33,20 @@ export interface DataTableSearchProps {
   containerClassName?: string
 }
 
+export interface DataTableSelectionProps<TData> {
+  selectedKeys: React.Key[]
+  onChange: (keys: React.Key[]) => void
+  getRowLabel?: (row: TData, index: number) => string
+  selectAllLabel?: string
+}
+
 export interface DataTableProps<TData> {
   columns: DataTableColumn<TData>[]
   data: TData[]
   getRowKey: (row: TData, index: number) => React.Key
   search?: DataTableSearchProps
   toolbar?: React.ReactNode
+  selection?: DataTableSelectionProps<TData>
   isLoading?: boolean
   error?: string | null
   loadingMessage?: React.ReactNode
@@ -82,6 +91,7 @@ export function DataTable<TData>({
   getRowKey,
   search,
   toolbar,
+  selection,
   isLoading = false,
   error = null,
   loadingMessage = "Loading data...",
@@ -89,40 +99,96 @@ export function DataTable<TData>({
   className,
 }: DataTableProps<TData>) {
   const showToolbar = Boolean(search || toolbar)
+  const totalColumns = columns.length + (selection ? 1 : 0)
+  const selectedKeySet = new Set(selection?.selectedKeys ?? [])
+  const rowKeys = data.map((row, rowIndex) => getRowKey(row, rowIndex))
+  const selectedCountInView = rowKeys.filter((key) =>
+    selectedKeySet.has(key)
+  ).length
+  const allSelected =
+    rowKeys.length > 0 && selectedCountInView === rowKeys.length
+  const someSelected = selectedCountInView > 0 && !allSelected
+
+  const handleToggleAll = () => {
+    if (!selection) return
+
+    if (allSelected) {
+      const viewKeySet = new Set(rowKeys)
+      selection.onChange(
+        selection.selectedKeys.filter((key) => !viewKeySet.has(key))
+      )
+      return
+    }
+
+    const merged = new Set(selection.selectedKeys)
+    rowKeys.forEach((key) => merged.add(key))
+    selection.onChange(Array.from(merged))
+  }
+
+  const handleToggleRow = (key: React.Key) => {
+    if (!selection) return
+
+    if (selectedKeySet.has(key)) {
+      selection.onChange(
+        selection.selectedKeys.filter((selectedKey) => selectedKey !== key)
+      )
+      return
+    }
+
+    selection.onChange([...selection.selectedKeys, key])
+  }
 
   const renderBody = () => {
     if (isLoading && data.length === 0) {
       return renderStatusRow(
-        columns.length,
+        totalColumns,
         loadingMessage,
         "text-muted-foreground"
       )
     }
 
     if (error) {
-      return renderStatusRow(columns.length, error, "text-destructive")
+      return renderStatusRow(totalColumns, error, "text-destructive")
     }
 
     if (data.length === 0) {
       return renderStatusRow(
-        columns.length,
+        totalColumns,
         emptyMessage,
         "text-muted-foreground"
       )
     }
 
-    return data.map((row, rowIndex) => (
-      <TableRow key={getRowKey(row, rowIndex)}>
-        {columns.map((column) => (
-          <TableCell
-            key={column.key}
-            className={cn("px-4 py-3", column.cellClassName)}
-          >
-            {renderCellContent(column, row, rowIndex)}
-          </TableCell>
-        ))}
-      </TableRow>
-    ))
+    return data.map((row, rowIndex) => {
+      const rowKey = getRowKey(row, rowIndex)
+      const isSelected = Boolean(selection && selectedKeySet.has(rowKey))
+
+      return (
+        <TableRow key={rowKey} data-state={isSelected ? "selected" : undefined}>
+          {selection && (
+            <TableCell className="w-10 px-4 py-3">
+              <Checkbox
+                checked={isSelected}
+                onCheckedChange={() => handleToggleRow(rowKey)}
+                aria-label={
+                  selection.getRowLabel
+                    ? selection.getRowLabel(row, rowIndex)
+                    : `Select row ${rowIndex + 1}`
+                }
+              />
+            </TableCell>
+          )}
+          {columns.map((column) => (
+            <TableCell
+              key={column.key}
+              className={cn("px-4 py-3", column.cellClassName)}
+            >
+              {renderCellContent(column, row, rowIndex)}
+            </TableCell>
+          ))}
+        </TableRow>
+      )
+    })
   }
 
   return (
@@ -152,6 +218,18 @@ export function DataTable<TData>({
       <Table>
         <TableHeader className="bg-muted/40">
           <TableRow className="hover:bg-transparent">
+            {selection && (
+              <TableHead className="w-10 px-4 py-3">
+                <Checkbox
+                  checked={
+                    allSelected ? true : someSelected ? "indeterminate" : false
+                  }
+                  disabled={data.length === 0}
+                  onCheckedChange={handleToggleAll}
+                  aria-label={selection.selectAllLabel ?? "Select all rows"}
+                />
+              </TableHead>
+            )}
             {columns.map((column) => (
               <TableHead
                 key={column.key}
@@ -177,4 +255,3 @@ export function DataTable<TData>({
     </section>
   )
 }
-

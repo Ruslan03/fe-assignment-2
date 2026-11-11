@@ -1,4 +1,5 @@
 import type {
+  BulkDeletePayload,
   CreateMemberPayload,
   MemberType,
   UpdateMemberPayload,
@@ -82,5 +83,24 @@ export class MemberService implements IMemberRepository {
     }
 
     return data?.data as MemberType
+  }
+
+  async bulkDeleteMembers(payload: BulkDeletePayload): Promise<MemberType[]> {
+    const url = `${process.env.NEXT_PUBLIC_BASE_API_URL}/members/bulk-delete`
+    const res = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    })
+
+    const data = await res.json()
+
+    if (!res.ok) {
+      throw new Error(data?.message ?? "Failed to bulk delete members")
+    }
+
+    return data?.data as MemberType[]
   }
 }

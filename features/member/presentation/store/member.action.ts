@@ -1,6 +1,7 @@
 import { createAsyncThunk } from "@reduxjs/toolkit"
 
 import {
+  bulkDeleteMembersController,
   createMemberController,
   deleteMemberController,
   exportMembersCsvController,
@@ -9,6 +10,7 @@ import {
   updateMemberController,
 } from "../../controller/member.controller"
 import type {
+  BulkDeletePayload,
   CreateMemberPayload,
   UpdateMemberPayload,
 } from "../../domain/member.entity"
@@ -43,6 +45,14 @@ export const updateMember = createAsyncThunk(
 export const deleteMember = createAsyncThunk(
   "member/deleteMember",
   async (id: string) => deleteMemberController(id)
+)
+
+export const bulkDeleteMembers = createAsyncThunk(
+  "member/bulkDeleteMembers",
+  async (payload: BulkDeletePayload) => {
+    const members = await bulkDeleteMembersController(payload)
+    return Array.isArray(members) ? members : []
+  }
 )
 
 export const exportMembersCsv = createAsyncThunk(

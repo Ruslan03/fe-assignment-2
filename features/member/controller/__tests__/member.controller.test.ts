@@ -7,6 +7,7 @@ import type {
 import { MemberService } from "../../infrastructure/api/member.service"
 import { MemberCsvService } from "../../infrastructure/csv/member-csv.service"
 import {
+  bulkDeleteMembersController,
   createMemberController,
   deleteMemberController,
   exportMembersCsvController,
@@ -95,6 +96,16 @@ describe("member.controller", () => {
     const member = await deleteMemberController("mem-001")
     expect(spy).toHaveBeenCalledWith("mem-001")
     expect(member).toEqual(MOCK_MEMBERS[0])
+  })
+
+  it("bulk deletes members through MemberService and usecase", async () => {
+    const spy = vi
+      .spyOn(MemberService.prototype, "bulkDeleteMembers")
+      .mockResolvedValue([])
+
+    const members = await bulkDeleteMembersController({ ids: ["mem-001"] })
+    expect(spy).toHaveBeenCalledWith({ ids: ["mem-001"] })
+    expect(members).toEqual([])
   })
 
   it("exports all members through MemberService and MemberCsvService", async () => {

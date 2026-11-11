@@ -4,6 +4,7 @@ import { injectReducer, type RootState } from "@/shared/presentation/store"
 
 import type { MemberType } from "../../domain/member.entity"
 import {
+  bulkDeleteMembers,
   createMember,
   deleteMember,
   exportMembersCsv,
@@ -27,6 +28,8 @@ export interface MemberState {
   isDeleting: boolean
   deletingMemberId: string | null
   deleteError: string | null
+  isBulkDeleting: boolean
+  bulkDeleteError: string | null
   isExporting: boolean
   exportError: string | null
 }
@@ -52,6 +55,8 @@ export const initialMemberState: MemberState = {
   isDeleting: false,
   deletingMemberId: null,
   deleteError: null,
+  isBulkDeleting: false,
+  bulkDeleteError: null,
   isExporting: false,
   exportError: null,
 }
@@ -71,6 +76,9 @@ export const memberSlice = createSlice({
     },
     clearDeleteError: (state) => {
       state.deleteError = null
+    },
+    clearBulkDeleteError: (state) => {
+      state.bulkDeleteError = null
     },
     clearExportError: (state) => {
       state.exportError = null
@@ -160,6 +168,26 @@ export const memberSlice = createSlice({
         state.deletingMemberId = null
         state.deleteError = action.error.message ?? "Failed to delete member"
       })
+      .addCase(bulkDeleteMembers.pending, (state) => {
+        state.isBulkDeleting = true
+        state.bulkDeleteError = null
+      })
+      .addCase(bulkDeleteMembers.fulfilled, (state, action) => {
+        const deletedIds = new Set(action.meta.arg.ids)
+        state.isBulkDeleting = false
+        state.bulkDeleteError = null
+        state.items = state.search.trim()
+          ? state.items.filter((item) => !deletedIds.has(item.id))
+          : action.payload
+        if (state.selectedMember && deletedIds.has(state.selectedMember.id)) {
+          state.selectedMember = null
+        }
+      })
+      .addCase(bulkDeleteMembers.rejected, (state, action) => {
+        state.isBulkDeleting = false
+        state.bulkDeleteError =
+          action.error.message ?? "Failed to delete selected members"
+      })
       .addCase(exportMembersCsv.pending, (state) => {
         state.isExporting = true
         state.exportError = null
@@ -180,6 +208,7 @@ export const {
   clearCreateError,
   clearUpdateError,
   clearDeleteError,
+  clearBulkDeleteError,
   clearExportError,
   clearSelectedMember,
   removeMemberFromState,

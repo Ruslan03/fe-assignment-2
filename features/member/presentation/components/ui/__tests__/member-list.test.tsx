@@ -6,7 +6,12 @@ import { ReduxProvider } from "@/shared/presentation/store/provider"
 
 import * as memberController from "../../../../controller/member.controller"
 import type { MemberType } from "../../../../domain/member.entity"
-import { clearDeleteError, fetchMembers, setSearch } from "../../../store"
+import {
+  clearBulkDeleteError,
+  clearDeleteError,
+  fetchMembers,
+  setSearch,
+} from "../../../store"
 import { MemberList } from "../member-list"
 
 const MOCK_MEMBERS: MemberType[] = [
@@ -36,6 +41,7 @@ describe("MemberList", () => {
     store.dispatch(setSearch(""))
     store.dispatch(fetchMembers.fulfilled([], "", undefined))
     store.dispatch(clearDeleteError())
+    store.dispatch(clearBulkDeleteError())
   })
 
   afterEach(() => {
@@ -193,5 +199,81 @@ describe("MemberList", () => {
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument()
     expect(screen.queryByText("Ruslan Wanandi")).not.toBeInTheDocument()
     expect(screen.getByText("Dimas Nugroho")).toBeInTheDocument()
+  })
+
+  it("supports checkbox selection in first column, disables action column buttons, and bulk deletes via toolbar button", async () => {
+    vi.spyOn(memberController, "getAllMemberController").mockResolvedValueOnce(
+      MOCK_MEMBERS
+    )
+    const bulkDeleteSpy = vi
+      .spyOn(memberController, "bulkDeleteMembersController")
+      .mockResolvedValueOnce([MOCK_MEMBERS[1]])
+
+    render(
+      <ReduxProvider>
+        <MemberList />
+      </ReduxProvider>
+    )
+
+    await act(async () => {
+      await Promise.resolve()
+    })
+
+    const headerCells = screen.getAllByRole("columnheader")
+    const selectAllCheckbox = screen.getByRole("checkbox", {
+      name: "Select all members",
+    })
+    expect(headerCells[0]).toContainElement(selectAllCheckbox)
+    expect(
+      screen.queryByRole("button", { name: /Delete Selected/ })
+    ).not.toBeInTheDocument()
+    expect(screen.getAllByRole("link", { name: "Edit" })).toHaveLength(2)
+
+    fireEvent.click(
+      screen.getByRole("checkbox", { name: "Select Ruslan Wanandi" })
+    )
+
+    const bulkButton = screen.getByRole("button", {
+      name: "Delete Selected (1)",
+    })
+    expect(bulkButton).toBeInTheDocument()
+    expect(
+      screen.getByRole("searchbox", { name: "Search members" }).parentElement
+        ?.parentElement
+    ).toContainElement(bulkButton)
+
+    expect(screen.queryAllByRole("link", { name: "Edit" })).toHaveLength(0)
+    for (const editButton of screen.getAllByRole("button", { name: "Edit" })) {
+      expect(editButton).toBeDisabled()
+    }
+    expect(
+      screen.getByRole("button", { name: "Delete Ruslan Wanandi" })
+    ).toBeDisabled()
+    expect(
+      screen.getByRole("button", { name: "Delete Dimas Nugroho" })
+    ).toBeDisabled()
+
+    await act(async () => {
+      fireEvent.click(bulkButton)
+      await Promise.resolve()
+    })
+
+    expect(bulkDeleteSpy).toHaveBeenCalledWith({ ids: ["mem-001"] })
+    expect(screen.getByRole("dialog")).toBeInTheDocument()
+    expect(screen.getByText("Members Deleted Successfully")).toBeInTheDocument()
+    expect(screen.getByText("1 member")).toBeInTheDocument()
+    expect(screen.queryByText("Ruslan Wanandi")).not.toBeInTheDocument()
+    expect(screen.getByText("Dimas Nugroho")).toBeInTheDocument()
+
+    expect(
+      screen.queryByRole("button", { name: /Delete Selected/ })
+    ).not.toBeInTheDocument()
+    expect(screen.getByRole("link", { name: "Edit" })).toBeInTheDocument()
+    expect(
+      screen.getByRole("button", { name: "Delete Dimas Nugroho" })
+    ).not.toBeDisabled()
+
+    fireEvent.click(screen.getByRole("button", { name: "Dismiss" }))
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument()
   })
 })

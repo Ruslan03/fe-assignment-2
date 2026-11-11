@@ -1,4 +1,5 @@
 import type {
+  BulkDeletePayload,
   CreateMemberPayload,
   UpdateMemberPayload,
 } from "../domain/member.entity"
@@ -36,6 +37,13 @@ export async function updateMemberUseCase(
 
 export async function deleteMemberUseCase(repo: IMemberRepository, id: string) {
   return repo.deleteMember(id)
+}
+
+export async function bulkDeleteMembersUseCase(
+  repo: IMemberRepository,
+  payload: BulkDeletePayload
+) {
+  return repo.bulkDeleteMembers(payload)
 }
 
 export async function exportMembersCsvUseCase(

@@ -207,4 +207,40 @@ describe("MemberService", () => {
       "Member not found"
     )
   })
+
+  it("posts bulk delete ids to /members/bulk-delete and throws when response is not ok", async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce({
+        ok: true,
+        json: vi.fn().mockResolvedValue({ status: true, data: [] }),
+      })
+      .mockResolvedValueOnce({
+        ok: false,
+        json: vi.fn().mockResolvedValue({
+          status: false,
+          message: "Field ids must be a non-empty array of member ids",
+        }),
+      })
+    vi.stubGlobal("fetch", fetchMock)
+
+    const service = new MemberService()
+    const result = await service.bulkDeleteMembers({ ids: ["mem-001"] })
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      "http://localhost:3000/api/members/bulk-delete",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ ids: ["mem-001"] }),
+      }
+    )
+    expect(result).toEqual([])
+
+    await expect(service.bulkDeleteMembers({ ids: [] })).rejects.toThrow(
+      "Field ids must be a non-empty array of member ids"
+    )
+  })
 })

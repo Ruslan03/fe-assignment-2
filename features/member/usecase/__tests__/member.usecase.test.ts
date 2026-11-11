@@ -7,6 +7,7 @@ import type {
 } from "../../domain/member.entity"
 import type { IMemberRepository } from "../member.repository.interface"
 import {
+  bulkDeleteMembersUseCase,
   createMemberUseCase,
   deleteMemberUseCase,
   exportMembersCsvUseCase,
@@ -41,16 +42,24 @@ const UPDATE_PAYLOAD: UpdateMemberPayload = {
   status: "inactive",
 }
 
+function createMockRepository(
+  overrides: Partial<IMemberRepository> = {}
+): IMemberRepository {
+  return {
+    getAllMembers: vi.fn(),
+    getMemberById: vi.fn(),
+    createMember: vi.fn(),
+    updateMember: vi.fn(),
+    deleteMember: vi.fn(),
+    bulkDeleteMembers: vi.fn(),
+    ...overrides,
+  }
+}
+
 describe("member usecases", () => {
   it("delegates getAllMembersUseCase to repository getAllMembers", async () => {
     const getAllMembers = vi.fn().mockResolvedValue(MOCK_MEMBERS)
-    const repo: IMemberRepository = {
-      getAllMembers,
-      getMemberById: vi.fn(),
-      createMember: vi.fn(),
-      updateMember: vi.fn(),
-      deleteMember: vi.fn(),
-    }
+    const repo = createMockRepository({ getAllMembers })
 
     const allResult = await getAllMembersUseCase(repo)
     expect(getAllMembers).toHaveBeenCalledWith(undefined)
@@ -63,13 +72,7 @@ describe("member usecases", () => {
 
   it("delegates getMemberByIdUseCase to repository getMemberById", async () => {
     const getMemberById = vi.fn().mockResolvedValue(MOCK_MEMBERS[0])
-    const repo: IMemberRepository = {
-      getAllMembers: vi.fn(),
-      getMemberById,
-      createMember: vi.fn(),
-      updateMember: vi.fn(),
-      deleteMember: vi.fn(),
-    }
+    const repo = createMockRepository({ getMemberById })
 
     const result = await getMemberByIdUseCase(repo, "mem-001")
     expect(getMemberById).toHaveBeenCalledWith("mem-001")
@@ -78,13 +81,7 @@ describe("member usecases", () => {
 
   it("delegates createMemberUseCase to repository createMember", async () => {
     const createMember = vi.fn().mockResolvedValue(MOCK_MEMBERS)
-    const repo: IMemberRepository = {
-      getAllMembers: vi.fn(),
-      getMemberById: vi.fn(),
-      createMember,
-      updateMember: vi.fn(),
-      deleteMember: vi.fn(),
-    }
+    const repo = createMockRepository({ createMember })
 
     const result = await createMemberUseCase(repo, CREATE_PAYLOAD)
     expect(createMember).toHaveBeenCalledWith(CREATE_PAYLOAD)
@@ -94,13 +91,7 @@ describe("member usecases", () => {
   it("delegates updateMemberUseCase to repository updateMember", async () => {
     const updatedMember = { ...MOCK_MEMBERS[0], ...UPDATE_PAYLOAD }
     const updateMember = vi.fn().mockResolvedValue(updatedMember)
-    const repo: IMemberRepository = {
-      getAllMembers: vi.fn(),
-      getMemberById: vi.fn(),
-      createMember: vi.fn(),
-      updateMember,
-      deleteMember: vi.fn(),
-    }
+    const repo = createMockRepository({ updateMember })
 
     const result = await updateMemberUseCase(repo, "mem-001", UPDATE_PAYLOAD)
     expect(updateMember).toHaveBeenCalledWith("mem-001", UPDATE_PAYLOAD)
@@ -109,29 +100,26 @@ describe("member usecases", () => {
 
   it("delegates deleteMemberUseCase to repository deleteMember", async () => {
     const deleteMember = vi.fn().mockResolvedValue(MOCK_MEMBERS[0])
-    const repo: IMemberRepository = {
-      getAllMembers: vi.fn(),
-      getMemberById: vi.fn(),
-      createMember: vi.fn(),
-      updateMember: vi.fn(),
-      deleteMember,
-    }
+    const repo = createMockRepository({ deleteMember })
 
     const result = await deleteMemberUseCase(repo, "mem-001")
     expect(deleteMember).toHaveBeenCalledWith("mem-001")
     expect(result).toEqual(MOCK_MEMBERS[0])
   })
 
+  it("delegates bulkDeleteMembersUseCase to repository bulkDeleteMembers", async () => {
+    const bulkDeleteMembers = vi.fn().mockResolvedValue([])
+    const repo = createMockRepository({ bulkDeleteMembers })
+
+    const result = await bulkDeleteMembersUseCase(repo, { ids: ["mem-001"] })
+    expect(bulkDeleteMembers).toHaveBeenCalledWith({ ids: ["mem-001"] })
+    expect(result).toEqual([])
+  })
+
   it("fetches all members without search query and delegates exportMembersCsvUseCase to csvExporter", async () => {
     const getAllMembers = vi.fn().mockResolvedValue(MOCK_MEMBERS)
     const exportMembers = vi.fn()
-    const repo: IMemberRepository = {
-      getAllMembers,
-      getMemberById: vi.fn(),
-      createMember: vi.fn(),
-      updateMember: vi.fn(),
-      deleteMember: vi.fn(),
-    }
+    const repo = createMockRepository({ getAllMembers })
 
     const result = await exportMembersCsvUseCase(repo, { exportMembers })
 

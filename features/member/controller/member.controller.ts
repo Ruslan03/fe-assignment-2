@@ -1,10 +1,12 @@
 import type {
+  BulkDeletePayload,
   CreateMemberPayload,
   UpdateMemberPayload,
 } from "../domain/member.entity"
 import { MemberService } from "../infrastructure/api/member.service"
 import { MemberCsvService } from "../infrastructure/csv/member-csv.service"
 import {
+  bulkDeleteMembersUseCase,
   createMemberUseCase,
   deleteMemberUseCase,
   exportMembersCsvUseCase,
@@ -44,6 +46,12 @@ export async function deleteMemberController(id: string) {
   const repo = new MemberService()
 
   return deleteMemberUseCase(repo, id)
+}
+
+export async function bulkDeleteMembersController(payload: BulkDeletePayload) {
+  const repo = new MemberService()
+
+  return bulkDeleteMembersUseCase(repo, payload)
 }
 
 export async function exportMembersCsvController() {

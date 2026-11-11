@@ -1,4 +1,5 @@
 import type {
+  BulkDeletePayload,
   CreateMemberPayload,
   MemberType,
   UpdateMemberPayload,
@@ -13,4 +14,5 @@ export interface IMemberRepository {
     payload: UpdateMemberPayload
   ) => Promise<MemberType>
   deleteMember: (id: string) => Promise<MemberType>
+  bulkDeleteMembers: (payload: BulkDeletePayload) => Promise<MemberType[]>
 }

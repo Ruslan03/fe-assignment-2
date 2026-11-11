@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect } from "react"
+import { useEffect, useMemo, useState } from "react"
 import Link from "next/link"
 
 import { formatDate } from "@/shared/presentation/helpers/format-date"
@@ -19,108 +19,148 @@ import { DataTable, type DataTableColumn } from "@organisms/data-table"
 
 import type { MemberType } from "../../../domain/member.entity"
 import {
+  clearBulkDeleteError,
   clearDeleteError,
   fetchMembers,
   selectMemberState,
   setSearch,
 } from "../../store"
+import { BulkDeleteMemberButton } from "./bulk-delete-member-button"
 import { DeleteMemberButton } from "./delete-member-button"
 
 function getMemberDetailHref(id: string): string {
   return `/members/${encodeURIComponent(id)}`
 }
 
-const MEMBER_COLUMNS: DataTableColumn<MemberType>[] = [
-  {
-    key: "member",
-    header: "MEMBER",
-    render: (member) => (
-      <Link
-        href={getMemberDetailHref(member.id)}
-        className="group flex w-fit items-center gap-3 rounded-md focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
-      >
-        <Avatar variant="soft" shape="circle" size="md" aria-hidden="true">
-          {getInitials(member.name)}
-        </Avatar>
-        <div className="flex flex-col">
-          <Text
-            variant="small"
-            className="font-medium text-foreground transition-colors group-hover:text-primary"
-          >
-            {member.name}
-          </Text>
-          <Text variant="caption">{member.email}</Text>
-        </div>
-      </Link>
-    ),
-  },
-  {
-    key: "role",
-    header: "ROLE/TITLE",
-    accessor: "role",
-    cellClassName: "text-sm text-foreground",
-  },
-  {
-    key: "department",
-    header: "DEPARTMENT",
-    render: (member) => (
-      <Badge variant="secondary" className="rounded-md px-2.5">
-        {member.department}
-      </Badge>
-    ),
-  },
-  {
-    key: "status",
-    header: "STATUS",
-    render: (member) => {
-      const isActive = member.status === "active"
-
-      return (
-        <StatusBadge variant={isActive ? "success" : "muted"}>
-          {isActive ? "Active" : "Inactive"}
-        </StatusBadge>
-      )
-    },
-  },
-  {
-    key: "joinDate",
-    header: "JOINED DATE",
-    cellClassName: "font-mono text-sm text-muted-foreground",
-    render: (member) => formatDate(member.joinDate),
-  },
-  {
-    key: "actions",
-    header: "ACTIONS",
-    headerClassName: "text-right",
-    cellClassName: "text-right",
-    render: (member) => (
-      <div className="inline-flex items-center justify-end gap-1">
-        <Button
-          variant="ghost"
-          size="sm"
-          asChild
-          className="text-primary hover:bg-primary/10 hover:text-primary"
+function getMemberColumns(
+  actionsDisabled: boolean
+): DataTableColumn<MemberType>[] {
+  return [
+    {
+      key: "member",
+      header: "MEMBER",
+      render: (member) => (
+        <Link
+          href={getMemberDetailHref(member.id)}
+          className="group flex w-fit items-center gap-3 rounded-md focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
         >
-          <Link href={getMemberDetailHref(member.id)}>Edit</Link>
-        </Button>
-        <DeleteMemberButton
-          member={member}
-          variant="ghost"
-          size="icon-sm"
-          iconOnly
-          aria-label={`Delete ${member.name}`}
-          className="text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
-        />
-      </div>
-    ),
-  },
-]
+          <Avatar variant="soft" shape="circle" size="md" aria-hidden="true">
+            {getInitials(member.name)}
+          </Avatar>
+          <div className="flex flex-col">
+            <Text
+              variant="small"
+              className="font-medium text-foreground transition-colors group-hover:text-primary"
+            >
+              {member.name}
+            </Text>
+            <Text variant="caption">{member.email}</Text>
+          </div>
+        </Link>
+      ),
+    },
+    {
+      key: "role",
+      header: "ROLE/TITLE",
+      accessor: "role",
+      cellClassName: "text-sm text-foreground",
+    },
+    {
+      key: "department",
+      header: "DEPARTMENT",
+      render: (member) => (
+        <Badge variant="secondary" className="rounded-md px-2.5">
+          {member.department}
+        </Badge>
+      ),
+    },
+    {
+      key: "status",
+      header: "STATUS",
+      render: (member) => {
+        const isActive = member.status === "active"
+
+        return (
+          <StatusBadge variant={isActive ? "success" : "muted"}>
+            {isActive ? "Active" : "Inactive"}
+          </StatusBadge>
+        )
+      },
+    },
+    {
+      key: "joinDate",
+      header: "JOINED DATE",
+      cellClassName: "font-mono text-sm text-muted-foreground",
+      render: (member) => formatDate(member.joinDate),
+    },
+    {
+      key: "actions",
+      header: "ACTIONS",
+      headerClassName: "text-right",
+      cellClassName: "text-right",
+      render: (member) => (
+        <div className="inline-flex items-center justify-end gap-1">
+          {actionsDisabled ? (
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              disabled
+              className="text-primary"
+            >
+              Edit
+            </Button>
+          ) : (
+            <Button
+              variant="ghost"
+              size="sm"
+              asChild
+              className="text-primary hover:bg-primary/10 hover:text-primary"
+            >
+              <Link href={getMemberDetailHref(member.id)}>Edit</Link>
+            </Button>
+          )}
+          <DeleteMemberButton
+            member={member}
+            variant="ghost"
+            size="icon-sm"
+            iconOnly
+            disabled={actionsDisabled}
+            aria-label={`Delete ${member.name}`}
+            className="text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+          />
+        </div>
+      ),
+    },
+  ]
+}
 
 export function MemberList() {
   const dispatch = useAppDispatch()
-  const { items, search, isLoading, error, deleteError } =
-    useAppSelector(selectMemberState)
+  const {
+    items,
+    search,
+    isLoading,
+    error,
+    deleteError,
+    bulkDeleteError,
+    isBulkDeleting,
+  } = useAppSelector(selectMemberState)
   const debouncedSearch = useDebounce(search, 1000)
+  const [selectedIds, setSelectedIds] = useState<string[]>([])
+
+  const validSelectedIds = useMemo(() => {
+    const visibleIds = new Set(items.map((member) => member.id))
+    return selectedIds.filter((id) => visibleIds.has(id))
+  }, [items, selectedIds])
+
+  const actionsDisabled = validSelectedIds.length > 0 || isBulkDeleting
+  const actionError = bulkDeleteError ?? deleteError
+
+  const columns = useMemo(
+    () => getMemberColumns(actionsDisabled),
+    [actionsDisabled]
+  )
 
   useEffect(() => {
     void dispatch(fetchMembers(debouncedSearch || undefined))
@@ -129,23 +169,24 @@ export function MemberList() {
   useEffect(() => {
     return () => {
       dispatch(clearDeleteError())
+      dispatch(clearBulkDeleteError())
     }
   }, [dispatch])
 
   return (
     <>
-      {deleteError && (
+      {actionError && (
         <Text
           as="p"
           variant="caption"
           role="alert"
           className="text-destructive"
         >
-          {deleteError}
+          {actionError}
         </Text>
       )}
       <DataTable
-        columns={MEMBER_COLUMNS}
+        columns={columns}
         data={items}
         getRowKey={(member) => member.id}
         isLoading={isLoading}
@@ -154,9 +195,24 @@ export function MemberList() {
         emptyMessage="No members found."
         search={{
           value: search,
-          onChange: (value) => dispatch(setSearch(value)),
+          onChange: (value) => {
+            setSelectedIds([])
+            dispatch(setSearch(value))
+          },
           placeholder: "Search by name, email, or role...",
           ariaLabel: "Search members",
+        }}
+        toolbar={
+          <BulkDeleteMemberButton
+            selectedIds={validSelectedIds}
+            onDeleted={() => setSelectedIds([])}
+          />
+        }
+        selection={{
+          selectedKeys: validSelectedIds,
+          onChange: (keys) => setSelectedIds(keys.map(String)),
+          selectAllLabel: "Select all members",
+          getRowLabel: (member) => `Select ${member.name}`,
         }}
       />
     </>

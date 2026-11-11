@@ -108,4 +108,90 @@ describe("DataTable", () => {
     )
     expect(screen.getByText("Nothing here")).toBeInTheDocument()
   })
+
+  it("supports multi-row selection with first-column checkboxes and select-all", () => {
+    const onSelectionChange = vi.fn()
+
+    const { rerender } = render(
+      <DataTable
+        columns={COLUMNS}
+        data={SAMPLE_DATA}
+        getRowKey={(row) => row.id}
+        selection={{
+          selectedKeys: [],
+          onChange: onSelectionChange,
+          selectAllLabel: "Select all users",
+          getRowLabel: (row) => `Select ${row.name ?? row.category}`,
+        }}
+      />
+    )
+
+    const selectAll = screen.getByRole("checkbox", { name: "Select all users" })
+    const alphaCheckbox = screen.getByRole("checkbox", { name: "Select Alpha" })
+    expect(selectAll).not.toBeDisabled()
+    expect(selectAll).toHaveAttribute("data-state", "unchecked")
+
+    const headerCells = screen.getAllByRole("columnheader")
+    expect(headerCells[0]).toContainElement(selectAll)
+
+    fireEvent.click(alphaCheckbox)
+    expect(onSelectionChange).toHaveBeenLastCalledWith(["1"])
+
+    rerender(
+      <DataTable
+        columns={COLUMNS}
+        data={SAMPLE_DATA}
+        getRowKey={(row) => row.id}
+        selection={{
+          selectedKeys: ["1"],
+          onChange: onSelectionChange,
+          selectAllLabel: "Select all users",
+          getRowLabel: (row) => `Select ${row.name ?? row.category}`,
+        }}
+      />
+    )
+
+    expect(selectAll).toHaveAttribute("data-state", "indeterminate")
+    fireEvent.click(selectAll)
+    expect(onSelectionChange).toHaveBeenLastCalledWith(["1", "2"])
+
+    rerender(
+      <DataTable
+        columns={COLUMNS}
+        data={SAMPLE_DATA}
+        getRowKey={(row) => row.id}
+        selection={{
+          selectedKeys: ["1", "2"],
+          onChange: onSelectionChange,
+          selectAllLabel: "Select all users",
+          getRowLabel: (row) => `Select ${row.name ?? row.category}`,
+        }}
+      />
+    )
+
+    expect(selectAll).toHaveAttribute("data-state", "checked")
+    fireEvent.click(selectAll)
+    expect(onSelectionChange).toHaveBeenLastCalledWith([])
+
+    rerender(
+      <DataTable
+        columns={COLUMNS}
+        data={[]}
+        getRowKey={(row) => row.id}
+        selection={{
+          selectedKeys: [],
+          onChange: onSelectionChange,
+          selectAllLabel: "Select all users",
+        }}
+      />
+    )
+
+    expect(
+      screen.getByRole("checkbox", { name: "Select all users" })
+    ).toBeDisabled()
+    expect(screen.getByText("No data found.").closest("td")).toHaveAttribute(
+      "colspan",
+      "4"
+    )
+  })
 })
