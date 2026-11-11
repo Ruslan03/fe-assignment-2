@@ -29,7 +29,7 @@ describe("DashboardMemberPage", () => {
     vi.restoreAllMocks()
   })
 
-  it("renders Members Directory header, AnalyticsSummary, Add Member button, and MemberList", async () => {
+  it("renders Members Directory header, MemberAnalyticsSummary, Add Member button, and MemberList", async () => {
     vi.spyOn(
       analyticsController,
       "getAnalyticsController"

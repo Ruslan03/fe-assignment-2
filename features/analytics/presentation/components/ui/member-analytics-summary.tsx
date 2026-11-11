@@ -34,7 +34,7 @@ const LOADING_PLACEHOLDERS = [
   { key: "pendingInvites", label: "Pending Invites" },
 ]
 
-export function AnalyticsSummary() {
+export function MemberAnalyticsSummary() {
   const dispatch = useAppDispatch()
   const { items, isLoading, hasLoaded, error } =
     useAppSelector(selectAnalyticsState)
@@ -97,3 +97,4 @@ export function AnalyticsSummary() {
     </section>
   )
 }
+

@@ -7,7 +7,7 @@ import { ReduxProvider } from "@/shared/presentation/store/provider"
 import * as analyticsController from "../../../../controller/analytics.controller"
 import type { AnalyticsItemType } from "../../../../domain/analytics.entity"
 import { clearAnalyticsError, fetchAnalytics } from "../../../store"
-import { AnalyticsSummary } from "../analytics-summary"
+import { MemberAnalyticsSummary } from "../member-analytics-summary"
 
 const MOCK_ANALYTICS: AnalyticsItemType[] = [
   {
@@ -36,7 +36,7 @@ const MOCK_ANALYTICS: AnalyticsItemType[] = [
   },
 ]
 
-describe("AnalyticsSummary", () => {
+describe("MemberAnalyticsSummary", () => {
   beforeEach(() => {
     store.dispatch(fetchAnalytics.fulfilled([], "", undefined))
     store.dispatch(clearAnalyticsError())
@@ -58,7 +58,7 @@ describe("AnalyticsSummary", () => {
 
     render(
       <ReduxProvider>
-        <AnalyticsSummary />
+        <MemberAnalyticsSummary />
       </ReduxProvider>
     )
 
@@ -97,7 +97,7 @@ describe("AnalyticsSummary", () => {
     await act(async () => {
       render(
         <ReduxProvider>
-          <AnalyticsSummary />
+          <MemberAnalyticsSummary />
         </ReduxProvider>
       )
       await Promise.resolve()
@@ -108,3 +108,4 @@ describe("AnalyticsSummary", () => {
     )
   })
 })
+
