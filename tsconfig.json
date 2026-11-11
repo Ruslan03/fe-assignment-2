@@ -39,7 +39,9 @@
       "@member/*": ["./features/member/*"],
       "@member": ["./features/member"],
       "@user/*": ["./features/user/*"],
-      "@user": ["./features/user"]
+      "@user": ["./features/user"],
+      "@department/*": ["./features/department/*"],
+      "@department": ["./features/department"]
     }
   },
   "include": [
