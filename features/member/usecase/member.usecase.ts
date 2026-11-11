@@ -2,6 +2,7 @@ import type {
   CreateMemberPayload,
   UpdateMemberPayload,
 } from "../domain/member.entity"
+import type { IMemberCsvExporter } from "./member-csv-exporter.interface"
 import type { IMemberRepository } from "./member.repository.interface"
 
 export async function getAllMembersUseCase(
@@ -35,4 +36,14 @@ export async function updateMemberUseCase(
 
 export async function deleteMemberUseCase(repo: IMemberRepository, id: string) {
   return repo.deleteMember(id)
+}
+
+export async function exportMembersCsvUseCase(
+  memberRepo: IMemberRepository,
+  csvExporter: IMemberCsvExporter
+) {
+  const members = await memberRepo.getAllMembers()
+  const list = Array.isArray(members) ? members : []
+  csvExporter.exportMembers(list)
+  return list
 }

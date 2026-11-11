@@ -3,9 +3,11 @@ import type {
   UpdateMemberPayload,
 } from "../domain/member.entity"
 import { MemberService } from "../infrastructure/api/member.service"
+import { MemberCsvService } from "../infrastructure/csv/member-csv.service"
 import {
   createMemberUseCase,
   deleteMemberUseCase,
+  exportMembersCsvUseCase,
   getAllMembersUseCase,
   getMemberByIdUseCase,
   updateMemberUseCase,
@@ -42,4 +44,11 @@ export async function deleteMemberController(id: string) {
   const repo = new MemberService()
 
   return deleteMemberUseCase(repo, id)
+}
+
+export async function exportMembersCsvController() {
+  const repo = new MemberService()
+  const csvExporter = new MemberCsvService()
+
+  return exportMembersCsvUseCase(repo, csvExporter)
 }

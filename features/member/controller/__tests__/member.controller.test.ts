@@ -5,9 +5,11 @@ import type {
   MemberType,
 } from "../../domain/member.entity"
 import { MemberService } from "../../infrastructure/api/member.service"
+import { MemberCsvService } from "../../infrastructure/csv/member-csv.service"
 import {
   createMemberController,
   deleteMemberController,
+  exportMembersCsvController,
   getAllMemberController,
   getMemberByIdController,
   updateMemberController,
@@ -93,5 +95,20 @@ describe("member.controller", () => {
     const member = await deleteMemberController("mem-001")
     expect(spy).toHaveBeenCalledWith("mem-001")
     expect(member).toEqual(MOCK_MEMBERS[0])
+  })
+
+  it("exports all members through MemberService and MemberCsvService", async () => {
+    const fetchSpy = vi
+      .spyOn(MemberService.prototype, "getAllMembers")
+      .mockResolvedValue(MOCK_MEMBERS)
+    const exportSpy = vi
+      .spyOn(MemberCsvService.prototype, "exportMembers")
+      .mockImplementation(() => {})
+
+    const members = await exportMembersCsvController()
+
+    expect(fetchSpy).toHaveBeenCalledWith()
+    expect(exportSpy).toHaveBeenCalledWith(MOCK_MEMBERS)
+    expect(members).toEqual(MOCK_MEMBERS)
   })
 })

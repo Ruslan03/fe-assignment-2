@@ -10,6 +10,7 @@ import type {
 import {
   createMember,
   deleteMember,
+  exportMembersCsv,
   fetchMemberById,
   fetchMembers,
   updateMember,
@@ -17,6 +18,7 @@ import {
 import {
   clearCreateError,
   clearDeleteError,
+  clearExportError,
   clearSelectedMember,
   clearUpdateError,
   initialMemberState,
@@ -53,6 +55,7 @@ describe("memberSlice", () => {
     store.dispatch(clearCreateError())
     store.dispatch(clearUpdateError())
     store.dispatch(clearDeleteError())
+    store.dispatch(clearExportError())
     store.dispatch(clearSelectedMember())
     vi.restoreAllMocks()
   })
@@ -76,6 +79,7 @@ describe("memberSlice", () => {
         createError: "Submit failed",
         updateError: "Update failed",
         deleteError: "Delete failed",
+        exportError: "Export failed",
       },
       clearCreateError()
     )
@@ -86,6 +90,9 @@ describe("memberSlice", () => {
 
     state = memberReducer(state, clearDeleteError())
     expect(state.deleteError).toBeNull()
+
+    state = memberReducer(state, clearExportError())
+    expect(state.exportError).toBeNull()
 
     state = memberReducer(
       {
@@ -253,6 +260,33 @@ describe("memberSlice", () => {
       isDeleting: false,
       deletingMemberId: null,
       deleteError: "Delete failed",
+    })
+  })
+
+  it("exports CSV via exportMembersCsv thunk without altering list items or search query", async () => {
+    store.dispatch(setSearch("filtered"))
+    store.dispatch(fetchMembers.fulfilled([], "", "filtered"))
+
+    const controllerSpy = vi
+      .spyOn(memberController, "exportMembersCsvController")
+      .mockResolvedValueOnce(SAMPLE_MEMBERS)
+
+    await store.dispatch(exportMembersCsv())
+
+    expect(controllerSpy).toHaveBeenCalledTimes(1)
+    expect(store.getState().member).toMatchObject({
+      items: [],
+      search: "filtered",
+      isExporting: false,
+      exportError: null,
+    })
+
+    controllerSpy.mockRejectedValueOnce(new Error("Export failed"))
+    await store.dispatch(exportMembersCsv())
+
+    expect(store.getState().member).toMatchObject({
+      isExporting: false,
+      exportError: "Export failed",
     })
   })
 

@@ -3,6 +3,7 @@ import { Header } from "@molecules/header"
 import MainLayout from "@templates/main-layout"
 
 import AddMemberButton from "../ui/add-member-button"
+import { ExportMemberButton } from "../ui/export-member-button"
 import { MemberList } from "../ui/member-list"
 
 export function DashboardMemberPage() {
@@ -12,7 +13,8 @@ export function DashboardMemberPage() {
         title="Members Directory"
         subtitle="Manage your organization team members, cross-functional roles, and workspace access levels."
         rightContent={
-          <div>
+          <div className="flex items-center gap-3">
+            <ExportMemberButton />
             <AddMemberButton />
           </div>
         }

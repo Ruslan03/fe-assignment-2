@@ -9,6 +9,7 @@ import type { IMemberRepository } from "../member.repository.interface"
 import {
   createMemberUseCase,
   deleteMemberUseCase,
+  exportMembersCsvUseCase,
   getAllMembersUseCase,
   getMemberByIdUseCase,
   updateMemberUseCase,
@@ -119,5 +120,23 @@ describe("member usecases", () => {
     const result = await deleteMemberUseCase(repo, "mem-001")
     expect(deleteMember).toHaveBeenCalledWith("mem-001")
     expect(result).toEqual(MOCK_MEMBERS[0])
+  })
+
+  it("fetches all members without search query and delegates exportMembersCsvUseCase to csvExporter", async () => {
+    const getAllMembers = vi.fn().mockResolvedValue(MOCK_MEMBERS)
+    const exportMembers = vi.fn()
+    const repo: IMemberRepository = {
+      getAllMembers,
+      getMemberById: vi.fn(),
+      createMember: vi.fn(),
+      updateMember: vi.fn(),
+      deleteMember: vi.fn(),
+    }
+
+    const result = await exportMembersCsvUseCase(repo, { exportMembers })
+
+    expect(getAllMembers).toHaveBeenCalledWith()
+    expect(exportMembers).toHaveBeenCalledWith(MOCK_MEMBERS)
+    expect(result).toEqual(MOCK_MEMBERS)
   })
 })

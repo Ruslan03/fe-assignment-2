@@ -11,7 +11,11 @@ import {
   fetchAnalytics,
 } from "@analytics/presentation/store"
 import * as memberController from "@member/controller/member.controller"
-import { fetchMembers, setSearch } from "@member/presentation/store"
+import {
+  clearExportError,
+  fetchMembers,
+  setSearch,
+} from "@member/presentation/store"
 import { store } from "@/shared/presentation/store"
 import { ReduxProvider } from "@/shared/presentation/store/provider"
 
@@ -21,6 +25,7 @@ describe("DashboardMemberPage", () => {
   beforeEach(() => {
     store.dispatch(setSearch(""))
     store.dispatch(fetchMembers.fulfilled([], "", undefined))
+    store.dispatch(clearExportError())
     store.dispatch(fetchAnalytics.fulfilled([], "", undefined))
     store.dispatch(clearAnalyticsError())
   })
@@ -84,6 +89,9 @@ describe("DashboardMemberPage", () => {
     expect(screen.getByTestId("mock-user-info")).toBeInTheDocument()
     expect(
       screen.getByRole("heading", { level: 1, name: "Members Directory" })
+    ).toBeInTheDocument()
+    expect(
+      screen.getByRole("button", { name: "Export CSV" })
     ).toBeInTheDocument()
     expect(screen.getByRole("link", { name: "Add Member" })).toHaveAttribute(
       "href",

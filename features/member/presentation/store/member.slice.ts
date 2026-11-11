@@ -6,6 +6,7 @@ import type { MemberType } from "../../domain/member.entity"
 import {
   createMember,
   deleteMember,
+  exportMembersCsv,
   fetchMemberById,
   fetchMembers,
   updateMember,
@@ -26,6 +27,8 @@ export interface MemberState {
   isDeleting: boolean
   deletingMemberId: string | null
   deleteError: string | null
+  isExporting: boolean
+  exportError: string | null
 }
 
 declare module "@/shared/presentation/store" {
@@ -49,6 +52,8 @@ export const initialMemberState: MemberState = {
   isDeleting: false,
   deletingMemberId: null,
   deleteError: null,
+  isExporting: false,
+  exportError: null,
 }
 
 export const memberSlice = createSlice({
@@ -66,6 +71,9 @@ export const memberSlice = createSlice({
     },
     clearDeleteError: (state) => {
       state.deleteError = null
+    },
+    clearExportError: (state) => {
+      state.exportError = null
     },
     clearSelectedMember: (state) => {
       state.selectedMember = null
@@ -152,6 +160,18 @@ export const memberSlice = createSlice({
         state.deletingMemberId = null
         state.deleteError = action.error.message ?? "Failed to delete member"
       })
+      .addCase(exportMembersCsv.pending, (state) => {
+        state.isExporting = true
+        state.exportError = null
+      })
+      .addCase(exportMembersCsv.fulfilled, (state) => {
+        state.isExporting = false
+        state.exportError = null
+      })
+      .addCase(exportMembersCsv.rejected, (state, action) => {
+        state.isExporting = false
+        state.exportError = action.error.message ?? "Failed to export members"
+      })
   },
 })
 
@@ -160,6 +180,7 @@ export const {
   clearCreateError,
   clearUpdateError,
   clearDeleteError,
+  clearExportError,
   clearSelectedMember,
   removeMemberFromState,
 } = memberSlice.actions
